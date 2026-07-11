@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { GtfsFile } from '../gtfs'
 import { downloadFile, downloadZip } from '../download'
+import { useT } from '../i18n'
 
 interface Props {
   files: GtfsFile[]
@@ -8,6 +9,7 @@ interface Props {
 }
 
 export default function PreviewSection({ files, zipName }: Props) {
+  const t = useT()
   const [active, setActive] = useState(0)
   const [busy, setBusy] = useState(false)
 
@@ -28,20 +30,18 @@ export default function PreviewSection({ files, zipName }: Props) {
         <div>
           <h2 className="text-lg font-semibold text-slate-800">
             <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-sm text-white">
-              3
+              4
             </span>
-            Preview &amp; download
+            {t('preview.title')}
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Live preview of the generated GTFS files. Download one, or all as a zip.
-          </p>
+          <p className="mt-1 text-sm text-slate-500">{t('preview.help')}</p>
         </div>
         <button
           onClick={handleZip}
           disabled={busy}
           className="rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-60"
         >
-          {busy ? 'Zipping…' : `Download all (${zipName})`}
+          {busy ? t('preview.zipping') : t('preview.downloadAll', { zip: zipName })}
         </button>
       </header>
 
@@ -68,7 +68,7 @@ export default function PreviewSection({ files, zipName }: Props) {
           onClick={() => downloadFile(activeFile)}
           className="rounded-md border border-slate-300 px-3 py-1 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
-          Download {activeFile.name}
+          {t('preview.download', { file: activeFile.name })}
         </button>
       </div>
 

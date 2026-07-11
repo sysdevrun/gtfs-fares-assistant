@@ -1,6 +1,7 @@
 // GTFS Fares V2 domain model.
 // Reference: https://gtfs.org/documentation/schedule/reference/#fare_mediatxt
 //            https://gtfs.org/documentation/schedule/reference/#fare_productstxt
+//            https://gtfs.org/documentation/schedule/reference/#rider_categoriestxt
 
 /**
  * fare_media_type enum as defined by the GTFS specification.
@@ -12,13 +13,7 @@
  */
 export type FareMediaType = 0 | 1 | 2 | 3 | 4
 
-export const FARE_MEDIA_TYPES: { value: FareMediaType; label: string }[] = [
-  { value: 0, label: '0 — None (e.g. cash, no media)' },
-  { value: 1, label: '1 — Physical paper ticket' },
-  { value: 2, label: '2 — Physical transit card' },
-  { value: 3, label: '3 — cEMV (contactless bank card)' },
-  { value: 4, label: '4 — Mobile app' },
-]
+export const FARE_MEDIA_TYPE_VALUES: FareMediaType[] = [0, 1, 2, 3, 4]
 
 /** A "support" — the fare media a product can be carried on. */
 export interface Support {
@@ -28,6 +23,20 @@ export interface Support {
   name: string
   /** fare_media_type (required) */
   type: FareMediaType
+}
+
+/** A rider category — an eligibility constraint (age, conditions) a product can target. */
+export interface RiderCategory {
+  /** rider_category_id (required, unique) */
+  id: string
+  /** rider_category_name (required) */
+  name: string
+  /** min_age (optional) — kept as string ('' when unset) */
+  minAge: string
+  /** max_age (optional) */
+  maxAge: string
+  /** eligibility_url (optional) — a link to the conditions */
+  eligibilityUrl: string
 }
 
 /** A fare product. */
@@ -46,16 +55,20 @@ export interface Product {
    * An empty list means the product is media-independent (no fare_media_id).
    */
   supportIds: string[]
+  /** rider_category_id this product targets ('' = no constraint, all riders). */
+  riderCategoryId: string
 }
 
 export interface AppState {
   networkName: string
   supports: Support[]
+  riderCategories: RiderCategory[]
   products: Product[]
 }
 
 export const EMPTY_STATE: AppState = {
   networkName: '',
   supports: [],
+  riderCategories: [],
   products: [],
 }

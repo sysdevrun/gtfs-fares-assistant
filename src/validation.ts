@@ -1,4 +1,12 @@
 // Shared validation used by the forms and by the zip importer.
+// Validators return a translation key (+ params) rather than a finished
+// string, so the UI can render them in the current language.
+
+/** A validation failure: a translation key and optional interpolation params. */
+export interface ValError {
+  key: string
+  params?: Record<string, string | number>
+}
 
 /**
  * Active ISO 4217 alphabetic currency codes.
@@ -44,32 +52,49 @@ export function isValidCurrency(code: string): boolean {
 /** GTFS ids: printable, no whitespace, no comma/quote (kept CSV-safe). */
 const ID_RE = /^[^\s,"]+$/
 
-export function validateId(id: string): string | null {
+export function validateId(id: string): ValError | null {
   const v = id.trim()
-  if (!v) return 'An id is required.'
-  if (!ID_RE.test(v)) return 'Id must not contain spaces, commas or quotes.'
+  if (!v) return { key: 'error.idRequired' }
+  if (!ID_RE.test(v)) return { key: 'error.idInvalid' }
   return null
 }
 
-/** Returns an error message, or null when the amount is valid. */
-export function validateAmount(amount: string, currency: string): string | null {
+export function validateAmount(amount: string, currency: string): ValError | null {
   const v = amount.trim()
-  if (v === '') return 'An amount is required.'
-  if (!/^\d+(\.\d+)?$/.test(v)) return 'Amount must be a non-negative number (e.g. 2.50).'
+  if (v === '') return { key: 'error.amountRequired' }
+  if (!/^\d+(\.\d+)?$/.test(v)) return { key: 'error.amountNumber' }
   const n = Number(v)
-  if (!Number.isFinite(n) || n < 0) return 'Amount must be a non-negative number.'
+  if (!Number.isFinite(n) || n < 0) return { key: 'error.amountNumber' }
   const maxDecimals = decimalsForCurrency(currency)
   const decimals = v.includes('.') ? v.split('.')[1].length : 0
   if (decimals > maxDecimals) {
-    return `${currency.toUpperCase()} allows at most ${maxDecimals} decimal place${
-      maxDecimals === 1 ? '' : 's'
-    }.`
+    return { key: 'error.amountDecimals', params: { currency: currency.toUpperCase(), max: maxDecimals } }
   }
   return null
 }
 
-export function validateCurrency(code: string): string | null {
-  if (!code.trim()) return 'A currency is required.'
-  if (!isValidCurrency(code)) return `"${code.toUpperCase()}" is not a valid ISO 4217 currency code.`
+export function validateCurrency(code: string): ValError | null {
+  if (!code.trim()) return { key: 'error.currencyRequired' }
+  if (!isValidCurrency(code)) return { key: 'error.currencyInvalid', params: { code: code.toUpperCase() } }
+  return null
+}
+
+/** Optional whole-number age ('' is allowed = unset). */
+export function validateAge(age: string): ValError | null {
+  const v = age.trim()
+  if (v === '') return null
+  if (!/^\d+$/.test(v)) return { key: 'error.ageNumber' }
+  return null
+}
+
+/** Both ages optional; when both set, min must not exceed max. */
+export function validateAgeRange(minAge: string, maxAge: string): ValError | null {
+  const minErr = validateAge(minAge)
+  if (minErr) return minErr
+  const maxErr = validateAge(maxAge)
+  if (maxErr) return maxErr
+  if (minAge.trim() !== '' && maxAge.trim() !== '' && Number(minAge) > Number(maxAge)) {
+    return { key: 'error.ageRange' }
+  }
   return null
 }

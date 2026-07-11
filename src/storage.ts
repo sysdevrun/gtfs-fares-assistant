@@ -11,7 +11,11 @@ function load(): AppState {
     return {
       networkName: parsed.networkName ?? '',
       supports: Array.isArray(parsed.supports) ? parsed.supports : [],
-      products: Array.isArray(parsed.products) ? parsed.products : [],
+      riderCategories: Array.isArray(parsed.riderCategories) ? parsed.riderCategories : [],
+      // Products from an older saved state may lack riderCategoryId.
+      products: Array.isArray(parsed.products)
+        ? parsed.products.map((p) => ({ ...p, riderCategoryId: p.riderCategoryId ?? '' }))
+        : [],
     }
   } catch {
     return EMPTY_STATE

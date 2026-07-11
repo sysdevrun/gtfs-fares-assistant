@@ -1,4 +1,4 @@
-import type { AppState, Product, Support } from './types'
+import type { AppState, Product, RiderCategory, Support } from './types'
 
 /**
  * Escape a single CSV field per RFC 4180 (which GTFS follows):
@@ -28,6 +28,13 @@ export function generateFareMedia(supports: Support[]): string {
   return toCsv(header, rows)
 }
 
+/** Build rider_categories.txt content from the rider categories. */
+export function generateRiderCategories(categories: RiderCategory[]): string {
+  const header = ['rider_category_id', 'rider_category_name', 'min_age', 'max_age', 'eligibility_url']
+  const rows = categories.map((c) => [c.id, c.name, c.minAge, c.maxAge, c.eligibilityUrl])
+  return toCsv(header, rows)
+}
+
 /**
  * Build fare_products.txt content from the products.
  *
@@ -35,14 +42,30 @@ export function generateFareMedia(supports: Support[]): string {
  * (same fare_product_id, differing fare_media_id) — the standard way
  * to express multi-media validity in GTFS Fares V2. A product with no
  * support selected produces a single row with an empty fare_media_id.
+ *
+ * References to supports or rider categories that no longer exist are
+ * dropped so the output never contains dangling ids.
  */
-export function generateFareProducts(products: Product[]): string {
-  const header = ['fare_product_id', 'fare_product_name', 'fare_media_id', 'amount', 'currency']
+export function generateFareProducts(
+  products: Product[],
+  validSupportIds: Set<string>,
+  validCategoryIds: Set<string>,
+): string {
+  const header = [
+    'fare_product_id',
+    'fare_product_name',
+    'rider_category_id',
+    'fare_media_id',
+    'amount',
+    'currency',
+  ]
   const rows: string[][] = []
   for (const p of products) {
-    const mediaIds = p.supportIds.length > 0 ? p.supportIds : ['']
+    const media = p.supportIds.filter((id) => validSupportIds.has(id))
+    const mediaIds = media.length > 0 ? media : ['']
+    const rider = validCategoryIds.has(p.riderCategoryId) ? p.riderCategoryId : ''
     for (const mediaId of mediaIds) {
-      rows.push([p.id, p.name, mediaId, p.amount, p.currency])
+      rows.push([p.id, p.name, rider, mediaId, p.amount, p.currency])
     }
   }
   return toCsv(header, rows)
@@ -55,10 +78,23 @@ export interface GtfsFile {
 
 /** The set of GTFS text files produced from the current state. */
 export function generateFiles(state: AppState): GtfsFile[] {
-  return [
+  const supportIds = new Set(state.supports.map((s) => s.id))
+  const categoryIds = new Set(state.riderCategories.map((c) => c.id))
+  const files: GtfsFile[] = [
     { name: 'fare_media.txt', content: generateFareMedia(state.supports) },
-    { name: 'fare_products.txt', content: generateFareProducts(state.products) },
   ]
+  // rider_categories.txt is only emitted when at least one is defined.
+  if (state.riderCategories.length > 0) {
+    files.push({
+      name: 'rider_categories.txt',
+      content: generateRiderCategories(state.riderCategories),
+    })
+  }
+  files.push({
+    name: 'fare_products.txt',
+    content: generateFareProducts(state.products, supportIds, categoryIds),
+  })
+  return files
 }
 
 /** Slugify a name into a safe id / filename fragment. */

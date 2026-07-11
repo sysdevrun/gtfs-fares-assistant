@@ -1,6 +1,7 @@
 import JSZip from 'jszip'
-import type { FareMediaType, Product, Support } from './types'
+import type { FareMediaType, Product, RiderCategory, Support } from './types'
 import { isValidCurrency, validateAmount, validateId } from './validation'
+import type { TFunc } from './i18n'
 
 /** Parse RFC 4180 CSV text into an array of rows. Handles quoted fields. */
 export function parseCsv(text: string): string[][] {
@@ -65,6 +66,7 @@ function toRecords(rows: string[][]): Record<string, string>[] {
 export interface ImportResult {
   networkName?: string
   supports: Support[]
+  riderCategories: RiderCategory[]
   products: Product[]
   warnings: string[]
 }
@@ -74,25 +76,23 @@ function parseMediaType(raw: string): FareMediaType | null {
   return [0, 1, 2, 3, 4].includes(n) ? (n as FareMediaType) : null
 }
 
-function buildSupports(records: Record<string, string>[], warnings: string[]): Support[] {
+function buildSupports(records: Record<string, string>[], warnings: string[], t: TFunc): Support[] {
   const supports: Support[] = []
   const seen = new Set<string>()
   records.forEach((rec, i) => {
     const line = i + 2 // account for header + 1-based
     const id = rec['fare_media_id'] ?? ''
     if (validateId(id)) {
-      warnings.push(`fare_media.txt line ${line}: skipped — invalid or missing fare_media_id.`)
+      warnings.push(t('warn.mediaInvalidId', { line }))
       return
     }
     if (seen.has(id)) {
-      warnings.push(`fare_media.txt line ${line}: skipped — duplicate fare_media_id "${id}".`)
+      warnings.push(t('warn.mediaDuplicate', { line, id }))
       return
     }
     const type = parseMediaType(rec['fare_media_type'] ?? '')
     if (type === null) {
-      warnings.push(
-        `fare_media.txt line ${line}: fare_media_type "${rec['fare_media_type']}" is invalid; defaulted to 0.`,
-      )
+      warnings.push(t('warn.mediaType', { line, value: rec['fare_media_type'] ?? '' }))
     }
     seen.add(id)
     supports.push({ id, name: rec['fare_media_name'] ?? '', type: type ?? 0 })
@@ -100,33 +100,68 @@ function buildSupports(records: Record<string, string>[], warnings: string[]): S
   return supports
 }
 
+function buildRiderCategories(
+  records: Record<string, string>[],
+  warnings: string[],
+  t: TFunc,
+): RiderCategory[] {
+  const cats: RiderCategory[] = []
+  const seen = new Set<string>()
+  records.forEach((rec, i) => {
+    const line = i + 2
+    const id = rec['rider_category_id'] ?? ''
+    if (validateId(id)) {
+      warnings.push(t('warn.riderInvalidId', { line }))
+      return
+    }
+    if (seen.has(id)) {
+      warnings.push(t('warn.riderDuplicate', { line, id }))
+      return
+    }
+    seen.add(id)
+    cats.push({
+      id,
+      name: rec['rider_category_name'] ?? '',
+      minAge: rec['min_age'] ?? '',
+      maxAge: rec['max_age'] ?? '',
+      eligibilityUrl: rec['eligibility_url'] ?? '',
+    })
+  })
+  return cats
+}
+
 function buildProducts(
   records: Record<string, string>[],
   knownSupportIds: Set<string>,
+  knownCategoryIds: Set<string>,
   warnings: string[],
+  t: TFunc,
 ): Product[] {
   const byId = new Map<string, Product>()
   records.forEach((rec, i) => {
     const line = i + 2
     const id = rec['fare_product_id'] ?? ''
     if (validateId(id)) {
-      warnings.push(`fare_products.txt line ${line}: skipped — invalid or missing fare_product_id.`)
+      warnings.push(t('warn.productInvalidId', { line }))
       return
     }
     const amount = rec['amount'] ?? ''
     const currency = (rec['currency'] ?? '').toUpperCase()
     if (!isValidCurrency(currency)) {
-      warnings.push(`fare_products.txt line ${line}: currency "${currency}" is not a valid ISO 4217 code.`)
+      warnings.push(t('warn.productCurrency', { line, code: currency }))
     }
     if (validateAmount(amount, currency)) {
-      warnings.push(`fare_products.txt line ${line}: amount "${amount}" is not valid for ${currency}.`)
+      warnings.push(t('warn.productAmount', { line, amount, currency }))
     }
 
     const mediaId = rec['fare_media_id'] ?? ''
+    const riderId = rec['rider_category_id'] ?? ''
     const existing = byId.get(id)
     if (existing) {
       // Same product on another support → merge the media id in.
       if (mediaId && !existing.supportIds.includes(mediaId)) existing.supportIds.push(mediaId)
+      // Keep the first rider category seen for this product.
+      if (!existing.riderCategoryId && riderId) existing.riderCategoryId = riderId
     } else {
       byId.set(id, {
         id,
@@ -134,19 +169,21 @@ function buildProducts(
         amount,
         currency,
         supportIds: mediaId ? [mediaId] : [],
+        riderCategoryId: riderId,
       })
     }
   })
 
   const products = [...byId.values()]
-  // Warn about products referencing a support that wasn't imported.
+  // Warn about references to supports / categories that weren't imported.
   for (const p of products) {
     for (const sid of p.supportIds) {
       if (!knownSupportIds.has(sid)) {
-        warnings.push(
-          `fare_products.txt: product "${p.id}" references fare_media_id "${sid}" not found in fare_media.txt.`,
-        )
+        warnings.push(t('warn.productMediaRef', { id: p.id, ref: sid }))
       }
+    }
+    if (p.riderCategoryId && !knownCategoryIds.has(p.riderCategoryId)) {
+      warnings.push(t('warn.productRiderRef', { id: p.id, ref: p.riderCategoryId }))
     }
   }
   return products
@@ -170,31 +207,48 @@ function networkFromFilename(filename: string): string | undefined {
 }
 
 /** Load a GTFS fares zip in the browser and reconstruct the app model. */
-export async function importFromZip(file: File): Promise<ImportResult> {
+export async function importFromZip(file: File, t: TFunc): Promise<ImportResult> {
   const warnings: string[] = []
   const zip = await JSZip.loadAsync(file)
 
   const mediaEntry = findEntry(zip, 'fare_media.txt')
+  const riderEntry = findEntry(zip, 'rider_categories.txt')
   const productsEntry = findEntry(zip, 'fare_products.txt')
 
   if (!mediaEntry && !productsEntry) {
-    throw new Error('No fare_media.txt or fare_products.txt found in the archive.')
+    throw new Error(t('import.errorNoFiles'))
   }
 
   let supports: Support[] = []
   if (mediaEntry) {
-    supports = buildSupports(toRecords(parseCsv(await mediaEntry.async('string'))), warnings)
+    supports = buildSupports(toRecords(parseCsv(await mediaEntry.async('string'))), warnings, t)
   } else {
-    warnings.push('fare_media.txt not found in the archive; no supports imported.')
+    warnings.push(t('warn.mediaMissing'))
+  }
+
+  let riderCategories: RiderCategory[] = []
+  if (riderEntry) {
+    riderCategories = buildRiderCategories(
+      toRecords(parseCsv(await riderEntry.async('string'))),
+      warnings,
+      t,
+    )
   }
 
   let products: Product[] = []
   if (productsEntry) {
-    const knownIds = new Set(supports.map((s) => s.id))
-    products = buildProducts(toRecords(parseCsv(await productsEntry.async('string'))), knownIds, warnings)
+    const knownSupportIds = new Set(supports.map((s) => s.id))
+    const knownCategoryIds = new Set(riderCategories.map((c) => c.id))
+    products = buildProducts(
+      toRecords(parseCsv(await productsEntry.async('string'))),
+      knownSupportIds,
+      knownCategoryIds,
+      warnings,
+      t,
+    )
   } else {
-    warnings.push('fare_products.txt not found in the archive; no products imported.')
+    warnings.push(t('warn.productMissing'))
   }
 
-  return { networkName: networkFromFilename(file.name), supports, products, warnings }
+  return { networkName: networkFromFilename(file.name), supports, riderCategories, products, warnings }
 }

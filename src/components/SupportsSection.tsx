@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { FARE_MEDIA_TYPES, type FareMediaType, type Support } from '../types'
+import { FARE_MEDIA_TYPE_VALUES, type FareMediaType, type Support } from '../types'
 import { slugify } from '../gtfs'
 import { validateId } from '../validation'
+import { useT } from '../i18n'
 
 interface Props {
   supports: Support[]
@@ -11,17 +12,30 @@ interface Props {
 interface Draft {
   id: string
   name: string
-  type: FareMediaType
+  /** '' until a media type has been chosen (must be selected first). */
+  type: FareMediaType | ''
   /** Whether the id was manually edited (stop auto-deriving from name). */
   idTouched: boolean
 }
 
-const emptyDraft: Draft = { id: '', name: '', type: 1, idTouched: false }
+const emptyDraft: Draft = { id: '', name: '', type: '', idTouched: false }
+
+/** Suggested id per media type (used as the id placeholder). Not translated. */
+const ID_PLACEHOLDER: Record<FareMediaType, string> = {
+  0: 'cash',
+  1: 'paper_ticket',
+  2: 'transit_card',
+  3: 'cemv',
+  4: 'mobile_app',
+}
 
 export default function SupportsSection({ supports, onChange }: Props) {
+  const t = useT()
   const [draft, setDraft] = useState<Draft>(emptyDraft)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const typeChosen = draft.type !== ''
 
   const resetForm = () => {
     setDraft(emptyDraft)
@@ -36,16 +50,20 @@ export default function SupportsSection({ supports, onChange }: Props) {
   }
 
   const submit = () => {
+    if (draft.type === '') {
+      setError(t('error.typeRequired'))
+      return
+    }
     const id = draft.id.trim()
     const idError = validateId(id)
     if (idError) {
-      setError(idError)
+      setError(t(idError.key, idError.params))
       return
     }
     // Uniqueness: allow keeping the same id when editing.
     const clash = supports.some((s) => s.id === id && s.id !== editingId)
     if (clash) {
-      setError(`A support with id "${id}" already exists.`)
+      setError(t('error.supportDuplicate', { id }))
       return
     }
     const next: Support = { id, name: draft.name.trim(), type: draft.type }
@@ -71,6 +89,9 @@ export default function SupportsSection({ supports, onChange }: Props) {
     }))
   }
 
+  const inputBase =
+    'mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400'
+
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <header className="mb-4">
@@ -78,12 +99,9 @@ export default function SupportsSection({ supports, onChange }: Props) {
           <span className="mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-sm text-white">
             1
           </span>
-          Supports (fare media)
+          {t('supports.title')}
         </h2>
-        <p className="mt-1 text-sm text-slate-500">
-          The media on which a fare product can be carried — paper ticket, transit card, mobile app…
-          Each becomes a row in <code className="rounded bg-slate-100 px-1">fare_media.txt</code>.
-        </p>
+        <p className="mt-1 text-sm text-slate-500">{t('supports.help')}</p>
       </header>
 
       {supports.length > 0 && (
@@ -92,11 +110,10 @@ export default function SupportsSection({ supports, onChange }: Props) {
             <li key={s.id} className="flex items-center justify-between gap-3 px-3 py-2">
               <div className="min-w-0">
                 <div className="truncate font-medium text-slate-800">
-                  {s.name || <span className="italic text-slate-400">(no name)</span>}
+                  {s.name || <span className="italic text-slate-400">{t('common.noName')}</span>}
                 </div>
                 <div className="truncate text-xs text-slate-500">
-                  <code>{s.id}</code> · type {s.type} —{' '}
-                  {FARE_MEDIA_TYPES.find((t) => t.value === s.type)?.label.split('—')[1]?.trim()}
+                  <code>{s.id}</code> · {t(`mediaTypeShort.${s.type}`)}
                 </div>
               </div>
               <div className="flex shrink-0 gap-2">
@@ -104,13 +121,13 @@ export default function SupportsSection({ supports, onChange }: Props) {
                   onClick={() => startEdit(s)}
                   className="rounded-md px-2 py-1 text-sm text-blue-600 hover:bg-blue-50"
                 >
-                  Edit
+                  {t('common.edit')}
                 </button>
                 <button
                   onClick={() => remove(s.id)}
                   className="rounded-md px-2 py-1 text-sm text-red-600 hover:bg-red-50"
                 >
-                  Delete
+                  {t('common.delete')}
                 </button>
               </div>
             </li>
@@ -119,59 +136,69 @@ export default function SupportsSection({ supports, onChange }: Props) {
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block">
-          <span className="text-sm font-medium text-slate-700">Name</span>
-          <input
-            value={draft.name}
-            onChange={(e) => onNameChange(e.target.value)}
-            placeholder="e.g. Transit card"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
-        </label>
-        <label className="block">
-          <span className="text-sm font-medium text-slate-700">
-            fare_media_id <span className="text-slate-400">(unique)</span>
-          </span>
-          <input
-            value={draft.id}
-            onChange={(e) => setDraft((d) => ({ ...d, id: e.target.value, idTouched: true }))}
-            placeholder="e.g. transit_card"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          />
-        </label>
+        {/* Media type must be chosen first. */}
         <label className="block sm:col-span-2">
-          <span className="text-sm font-medium text-slate-700">fare_media_type</span>
+          <span className="text-sm font-medium text-slate-700">{t('supports.type')}</span>
           <select
-            value={draft.type}
+            value={draft.type === '' ? '' : String(draft.type)}
             onChange={(e) =>
-              setDraft((d) => ({ ...d, type: Number(e.target.value) as FareMediaType }))
+              setDraft((d) => ({
+                ...d,
+                type: e.target.value === '' ? '' : (Number(e.target.value) as FareMediaType),
+              }))
             }
             className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
-            {FARE_MEDIA_TYPES.map((t) => (
-              <option key={t.value} value={t.value}>
-                {t.label}
+            <option value="">{t('supports.selectType')}</option>
+            {FARE_MEDIA_TYPE_VALUES.map((v) => (
+              <option key={v} value={v}>
+                {t(`mediaType.${v}`)}
               </option>
             ))}
           </select>
         </label>
+
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">{t('supports.name')}</span>
+          <input
+            value={draft.name}
+            onChange={(e) => onNameChange(e.target.value)}
+            disabled={!typeChosen}
+            placeholder={typeChosen ? t(`supports.phName.${draft.type}`) : ''}
+            className={inputBase}
+          />
+        </label>
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">
+            {t('supports.id')} <span className="text-slate-400">({t('common.unique')})</span>
+          </span>
+          <input
+            value={draft.id}
+            onChange={(e) => setDraft((d) => ({ ...d, id: e.target.value, idTouched: true }))}
+            disabled={!typeChosen}
+            placeholder={typeChosen ? ID_PLACEHOLDER[draft.type as FareMediaType] : ''}
+            className={inputBase + ' font-mono'}
+          />
+        </label>
       </div>
 
+      {!typeChosen && <p className="mt-2 text-sm text-slate-400">{t('supports.typeFirstHint')}</p>}
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
 
       <div className="mt-4 flex gap-2">
         <button
           onClick={submit}
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          disabled={!typeChosen}
+          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
         >
-          {editingId ? 'Save changes' : 'Add support'}
+          {editingId ? t('supports.save') : t('supports.add')}
         </button>
         {editingId && (
           <button
             onClick={resetForm}
             className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
         )}
       </div>

@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import SupportsSection from './components/SupportsSection'
+import RiderCategoriesSection from './components/RiderCategoriesSection'
 import ProductsSection from './components/ProductsSection'
 import PreviewSection from './components/PreviewSection'
 import ImportSection from './components/ImportSection'
@@ -7,26 +8,26 @@ import { generateFiles, zipFilename } from './gtfs'
 import { clearStorage, usePersistentState } from './storage'
 import { EMPTY_STATE } from './types'
 import type { ImportResult } from './parse'
+import { LANGS, useI18n } from './i18n'
 
 export default function App() {
+  const { t, lang, setLang } = useI18n()
   const [state, setState] = usePersistentState()
 
   const files = useMemo(() => generateFiles(state), [state])
   const zipName = useMemo(() => zipFilename(state.networkName), [state.networkName])
 
   const resetAll = () => {
-    if (confirm('Clear the network name, all supports and all products? This cannot be undone.')) {
+    if (confirm(t('app.confirmReset'))) {
       clearStorage()
       setState(EMPTY_STATE)
     }
   }
 
   const applyImport = (result: ImportResult): boolean => {
-    const hasData = state.supports.length > 0 || state.products.length > 0
-    if (
-      hasData &&
-      !confirm('Replace the current supports and products with the imported ones?')
-    ) {
+    const hasData =
+      state.supports.length > 0 || state.products.length > 0 || state.riderCategories.length > 0
+    if (hasData && !confirm(t('app.confirmReplace'))) {
       return false
     }
     setState((s) => ({
@@ -34,6 +35,7 @@ export default function App() {
       // from the imported zip filename.
       networkName: s.networkName.trim() ? s.networkName : result.networkName ?? '',
       supports: result.supports,
+      riderCategories: result.riderCategories,
       products: result.products,
     }))
     return true
@@ -44,41 +46,48 @@ export default function App() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 px-4 py-5">
           <div>
-            <h1 className="text-xl font-bold text-slate-800">GTFS Fares Assistant</h1>
-            <p className="text-sm text-slate-500">
-              Build <code className="rounded bg-slate-100 px-1">fare_media.txt</code> &amp;{' '}
-              <code className="rounded bg-slate-100 px-1">fare_products.txt</code> (GTFS Fares V2) —
-              entirely in your browser.
-            </p>
+            <h1 className="text-xl font-bold text-slate-800">{t('app.title')}</h1>
+            <p className="text-sm text-slate-500">{t('app.subtitle')}</p>
           </div>
-          <button
-            onClick={resetAll}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
-          >
-            Reset all
-          </button>
+          <div className="flex items-center gap-2">
+            <label className="flex items-center gap-1.5 text-sm text-slate-500">
+              <span className="sr-only sm:not-sr-only">{t('lang.label')}</span>
+              <select
+                value={lang}
+                onChange={(e) => setLang(e.target.value as (typeof LANGS)[number])}
+                aria-label={t('lang.label')}
+                className="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="en">English</option>
+                <option value="fr">Français</option>
+              </select>
+            </label>
+            <button
+              onClick={resetAll}
+              className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-50"
+            >
+              {t('app.reset')}
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl space-y-6 px-4 py-6">
         <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
           <label className="block">
-            <span className="text-sm font-semibold text-slate-800">Network name</span>
+            <span className="text-sm font-semibold text-slate-800">{t('network.label')}</span>
             <p className="mb-2 mt-0.5 text-sm text-slate-500">
-              Used to name the downloaded zip, e.g.{' '}
-              <code className="rounded bg-slate-100 px-1">{zipName}</code>.
+              {t('network.help', { zip: zipName })}
             </p>
             <input
               value={state.networkName}
               onChange={(e) => setState((s) => ({ ...s, networkName: e.target.value }))}
-              placeholder="e.g. My City Transit"
+              placeholder={t('network.placeholder')}
               className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </label>
           {state.networkName.trim() === '' && (
-            <p className="mt-2 text-sm text-amber-600">
-              Define a network name so the zip filename includes your network.
-            </p>
+            <p className="mt-2 text-sm text-amber-600">{t('network.warning')}</p>
           )}
         </section>
 
@@ -89,9 +98,15 @@ export default function App() {
           onChange={(supports) => setState((s) => ({ ...s, supports }))}
         />
 
+        <RiderCategoriesSection
+          categories={state.riderCategories}
+          onChange={(riderCategories) => setState((s) => ({ ...s, riderCategories }))}
+        />
+
         <ProductsSection
           products={state.products}
           supports={state.supports}
+          riderCategories={state.riderCategories}
           onChange={(products) => setState((s) => ({ ...s, products }))}
         />
 
@@ -99,14 +114,14 @@ export default function App() {
       </main>
 
       <footer className="mx-auto max-w-3xl px-4 pb-10 pt-2 text-center text-xs text-slate-400">
-        Frontend-only · your data stays in this browser (localStorage) ·{' '}
+        {t('app.footer')}
         <a
           href="https://gtfs.org/documentation/schedule/reference/#fare_mediatxt"
           target="_blank"
           rel="noreferrer"
           className="underline hover:text-slate-600"
         >
-          GTFS Fares V2 reference
+          {t('app.footerLink')}
         </a>
       </footer>
     </div>
