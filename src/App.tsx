@@ -2,9 +2,11 @@ import { useMemo } from 'react'
 import SupportsSection from './components/SupportsSection'
 import ProductsSection from './components/ProductsSection'
 import PreviewSection from './components/PreviewSection'
+import ImportSection from './components/ImportSection'
 import { generateFiles, zipFilename } from './gtfs'
 import { clearStorage, usePersistentState } from './storage'
 import { EMPTY_STATE } from './types'
+import type { ImportResult } from './parse'
 
 export default function App() {
   const [state, setState] = usePersistentState()
@@ -17,6 +19,24 @@ export default function App() {
       clearStorage()
       setState(EMPTY_STATE)
     }
+  }
+
+  const applyImport = (result: ImportResult): boolean => {
+    const hasData = state.supports.length > 0 || state.products.length > 0
+    if (
+      hasData &&
+      !confirm('Replace the current supports and products with the imported ones?')
+    ) {
+      return false
+    }
+    setState((s) => ({
+      // Keep the current network name if set; otherwise use the one derived
+      // from the imported zip filename.
+      networkName: s.networkName.trim() ? s.networkName : result.networkName ?? '',
+      supports: result.supports,
+      products: result.products,
+    }))
+    return true
   }
 
   return (
@@ -61,6 +81,8 @@ export default function App() {
             </p>
           )}
         </section>
+
+        <ImportSection onImport={applyImport} />
 
         <SupportsSection
           supports={state.supports}

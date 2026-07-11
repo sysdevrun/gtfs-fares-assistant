@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { Product, Support } from '../types'
 import { slugify } from '../gtfs'
+import { validateAmount, validateCurrency, validateId } from '../validation'
 
 interface Props {
   products: Product[]
@@ -64,16 +65,19 @@ export default function ProductsSection({ products, supports, onChange }: Props)
 
   const submit = () => {
     const id = draft.id.trim()
-    if (!id) {
-      setError('An id is required.')
+    const idError = validateId(id)
+    if (idError) {
+      setError(idError)
       return
     }
-    if (draft.amount.trim() === '' || Number.isNaN(Number(draft.amount))) {
-      setError('A numeric amount is required.')
+    const currencyError = validateCurrency(draft.currency)
+    if (currencyError) {
+      setError(currencyError)
       return
     }
-    if (!draft.currency.trim()) {
-      setError('A currency is required.')
+    const amountError = validateAmount(draft.amount, draft.currency)
+    if (amountError) {
+      setError(amountError)
       return
     }
     const clash = products.some((p) => p.id === id && p.id !== editingId)

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FARE_MEDIA_TYPES, type FareMediaType, type Support } from '../types'
 import { slugify } from '../gtfs'
+import { validateId } from '../validation'
 
 interface Props {
   supports: Support[]
@@ -36,8 +37,9 @@ export default function SupportsSection({ supports, onChange }: Props) {
 
   const submit = () => {
     const id = draft.id.trim()
-    if (!id) {
-      setError('An id is required.')
+    const idError = validateId(id)
+    if (idError) {
+      setError(idError)
       return
     }
     // Uniqueness: allow keeping the same id when editing.
