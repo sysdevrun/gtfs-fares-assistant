@@ -1,0 +1,78 @@
+import type { AppState, Product, Support } from './types'
+
+/**
+ * Escape a single CSV field per RFC 4180 (which GTFS follows):
+ * wrap in double quotes and double any inner quote when the value
+ * contains a comma, quote, or newline.
+ */
+function csvField(value: string): string {
+  if (/[",\r\n]/.test(value)) {
+    return '"' + value.replace(/"/g, '""') + '"'
+  }
+  return value
+}
+
+function toCsv(header: string[], rows: string[][]): string {
+  const lines = [header.join(',')]
+  for (const row of rows) {
+    lines.push(row.map(csvField).join(','))
+  }
+  // GTFS files are plain CSV; a trailing newline is conventional.
+  return lines.join('\n') + '\n'
+}
+
+/** Build fare_media.txt content from the supports. */
+export function generateFareMedia(supports: Support[]): string {
+  const header = ['fare_media_id', 'fare_media_name', 'fare_media_type']
+  const rows = supports.map((s) => [s.id, s.name, String(s.type)])
+  return toCsv(header, rows)
+}
+
+/**
+ * Build fare_products.txt content from the products.
+ *
+ * A product valid on several supports produces one row per support
+ * (same fare_product_id, differing fare_media_id) — the standard way
+ * to express multi-media validity in GTFS Fares V2. A product with no
+ * support selected produces a single row with an empty fare_media_id.
+ */
+export function generateFareProducts(products: Product[]): string {
+  const header = ['fare_product_id', 'fare_product_name', 'fare_media_id', 'amount', 'currency']
+  const rows: string[][] = []
+  for (const p of products) {
+    const mediaIds = p.supportIds.length > 0 ? p.supportIds : ['']
+    for (const mediaId of mediaIds) {
+      rows.push([p.id, p.name, mediaId, p.amount, p.currency])
+    }
+  }
+  return toCsv(header, rows)
+}
+
+export interface GtfsFile {
+  name: string
+  content: string
+}
+
+/** The set of GTFS text files produced from the current state. */
+export function generateFiles(state: AppState): GtfsFile[] {
+  return [
+    { name: 'fare_media.txt', content: generateFareMedia(state.supports) },
+    { name: 'fare_products.txt', content: generateFareProducts(state.products) },
+  ]
+}
+
+/** Slugify a name into a safe id / filename fragment. */
+export function slugify(input: string): string {
+  return input
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '') // strip accents
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/^_+|_+$/g, '')
+}
+
+/** Zip filename incorporating the network name, e.g. "my_network_gtfs_fares.zip". */
+export function zipFilename(networkName: string): string {
+  const slug = slugify(networkName)
+  return (slug ? `${slug}_` : '') + 'gtfs_fares.zip'
+}
