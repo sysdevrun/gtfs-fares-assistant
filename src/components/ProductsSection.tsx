@@ -126,6 +126,8 @@ export default function ProductsSection({ products, supports, riderCategories, o
     const c = riderCategories.find((x) => x.id === id)
     return c ? c.name || c.id : id
   }
+  const isDefaultCategory = (id: string) =>
+    riderCategories.find((x) => x.id === id)?.isDefault ?? false
 
   const inputBase =
     'mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
@@ -153,7 +155,14 @@ export default function ProductsSection({ products, supports, riderCategories, o
                     — {p.amount} {p.currency}
                   </span>
                   {p.riderCategoryId && (
-                    <span className="ml-2 rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">
+                    <span
+                      className={
+                        'ml-2 rounded-full px-2 py-0.5 text-xs ' +
+                        (isDefaultCategory(p.riderCategoryId)
+                          ? 'bg-emerald-50 text-emerald-700'
+                          : 'bg-blue-50 text-blue-700')
+                      }
+                    >
                       {categoryLabel(p.riderCategoryId)}
                     </span>
                   )}
