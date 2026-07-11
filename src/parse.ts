@@ -107,6 +107,7 @@ function buildRiderCategories(
 ): RiderCategory[] {
   const cats: RiderCategory[] = []
   const seen = new Set<string>()
+  let defaultSeen = false
   records.forEach((rec, i) => {
     const line = i + 2
     const id = rec['rider_category_id'] ?? ''
@@ -119,11 +120,17 @@ function buildRiderCategories(
       return
     }
     seen.add(id)
+    let isDefault = (rec['is_default_fare_category'] ?? '').trim() === '1'
+    if (isDefault && defaultSeen) {
+      // At most one default is kept; drop the extras.
+      warnings.push(t('warn.riderMultipleDefault', { id }))
+      isDefault = false
+    }
+    if (isDefault) defaultSeen = true
     cats.push({
       id,
       name: rec['rider_category_name'] ?? '',
-      minAge: rec['min_age'] ?? '',
-      maxAge: rec['max_age'] ?? '',
+      isDefault,
       eligibilityUrl: rec['eligibility_url'] ?? '',
     })
   })

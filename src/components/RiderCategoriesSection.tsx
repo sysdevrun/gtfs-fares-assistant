@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import type { RiderCategory } from '../types'
 import { slugify } from '../gtfs'
-import { validateAgeRange, validateId } from '../validation'
+import { validateId } from '../validation'
 import { useT } from '../i18n'
 
 interface Props {
@@ -12,8 +12,7 @@ interface Props {
 interface Draft {
   id: string
   name: string
-  minAge: string
-  maxAge: string
+  isDefault: boolean
   eligibilityUrl: string
   idTouched: boolean
 }
@@ -21,8 +20,7 @@ interface Draft {
 const emptyDraft: Draft = {
   id: '',
   name: '',
-  minAge: '',
-  maxAge: '',
+  isDefault: false,
   eligibilityUrl: '',
   idTouched: false,
 }
@@ -43,8 +41,7 @@ export default function RiderCategoriesSection({ categories, onChange }: Props) 
     setDraft({
       id: c.id,
       name: c.name,
-      minAge: c.minAge,
-      maxAge: c.maxAge,
+      isDefault: c.isDefault,
       eligibilityUrl: c.eligibilityUrl,
       idTouched: true,
     })
@@ -59,11 +56,6 @@ export default function RiderCategoriesSection({ categories, onChange }: Props) 
       setError(t(idError.key, idError.params))
       return
     }
-    const ageError = validateAgeRange(draft.minAge, draft.maxAge)
-    if (ageError) {
-      setError(t(ageError.key, ageError.params))
-      return
-    }
     const clash = categories.some((c) => c.id === id && c.id !== editingId)
     if (clash) {
       setError(t('error.riderDuplicate', { id }))
@@ -72,14 +64,17 @@ export default function RiderCategoriesSection({ categories, onChange }: Props) 
     const next: RiderCategory = {
       id,
       name: draft.name.trim(),
-      minAge: draft.minAge.trim(),
-      maxAge: draft.maxAge.trim(),
+      isDefault: draft.isDefault,
       eligibilityUrl: draft.eligibilityUrl.trim(),
     }
+    const others = categories.filter((c) => c.id !== editingId)
+    // Enforce at most one default: making this one default clears the others.
+    const normalized = draft.isDefault ? others.map((c) => ({ ...c, isDefault: false })) : others
     if (editingId) {
-      onChange(categories.map((c) => (c.id === editingId ? next : c)))
+      // Preserve original position when editing.
+      onChange(categories.map((c) => (c.id === editingId ? next : draft.isDefault ? { ...c, isDefault: false } : c)))
     } else {
-      onChange([...categories, next])
+      onChange([...normalized, next])
     }
     resetForm()
   }
@@ -89,16 +84,13 @@ export default function RiderCategoriesSection({ categories, onChange }: Props) 
     if (editingId === id) resetForm()
   }
 
-  const onNameChange = (name: string) => {
-    setDraft((d) => ({ ...d, name, id: d.idTouched ? d.id : slugify(name) }))
+  /** Toggle the default flag directly from the list (radio-like: only one). */
+  const setDefault = (id: string, value: boolean) => {
+    onChange(categories.map((c) => ({ ...c, isDefault: c.id === id ? value : value ? false : c.isDefault })))
   }
 
-  const ageText = (c: RiderCategory) => {
-    if (!c.minAge && !c.maxAge) return null
-    return t('riders.age', {
-      min: c.minAge || t('riders.ageAny'),
-      max: c.maxAge || t('riders.ageAny'),
-    })
+  const onNameChange = (name: string) => {
+    setDraft((d) => ({ ...d, name, id: d.idTouched ? d.id : slugify(name) }))
   }
 
   const inputBase =
@@ -123,10 +115,14 @@ export default function RiderCategoriesSection({ categories, onChange }: Props) 
               <div className="min-w-0">
                 <div className="truncate font-medium text-slate-800">
                   {c.name || <span className="italic text-slate-400">{t('common.noName')}</span>}
+                  {c.isDefault && (
+                    <span className="ml-2 rounded-full bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">
+                      {t('riders.defaultBadge')}
+                    </span>
+                  )}
                 </div>
                 <div className="truncate text-xs text-slate-500">
                   <code>{c.id}</code>
-                  {ageText(c) && <> · {ageText(c)}</>}
                   {c.eligibilityUrl && (
                     <>
                       {' · '}
@@ -142,7 +138,16 @@ export default function RiderCategoriesSection({ categories, onChange }: Props) 
                   )}
                 </div>
               </div>
-              <div className="flex shrink-0 gap-2">
+              <div className="flex shrink-0 items-center gap-2">
+                <label className="flex items-center gap-1 text-xs text-slate-500">
+                  <input
+                    type="checkbox"
+                    checked={c.isDefault}
+                    onChange={(e) => setDefault(c.id, e.target.checked)}
+                    className="h-3.5 w-3.5"
+                  />
+                  {t('riders.defaultBadge')}
+                </label>
                 <button
                   onClick={() => startEdit(c)}
                   className="rounded-md px-2 py-1 text-sm text-blue-600 hover:bg-blue-50"
@@ -182,30 +187,6 @@ export default function RiderCategoriesSection({ categories, onChange }: Props) 
             className={inputBase + ' font-mono'}
           />
         </label>
-        <label className="block">
-          <span className="text-sm font-medium text-slate-700">
-            {t('riders.minAge')} <span className="text-slate-400">({t('common.optional')})</span>
-          </span>
-          <input
-            value={draft.minAge}
-            onChange={(e) => setDraft((d) => ({ ...d, minAge: e.target.value }))}
-            inputMode="numeric"
-            placeholder="0"
-            className={inputBase}
-          />
-        </label>
-        <label className="block">
-          <span className="text-sm font-medium text-slate-700">
-            {t('riders.maxAge')} <span className="text-slate-400">({t('common.optional')})</span>
-          </span>
-          <input
-            value={draft.maxAge}
-            onChange={(e) => setDraft((d) => ({ ...d, maxAge: e.target.value }))}
-            inputMode="numeric"
-            placeholder="25"
-            className={inputBase}
-          />
-        </label>
         <label className="block sm:col-span-2">
           <span className="text-sm font-medium text-slate-700">
             {t('riders.eligibilityUrl')}{' '}
@@ -218,6 +199,18 @@ export default function RiderCategoriesSection({ categories, onChange }: Props) 
             placeholder="https://…"
             className={inputBase}
           />
+        </label>
+        <label className="flex items-start gap-2 sm:col-span-2">
+          <input
+            type="checkbox"
+            checked={draft.isDefault}
+            onChange={(e) => setDraft((d) => ({ ...d, isDefault: e.target.checked }))}
+            className="mt-0.5 h-4 w-4"
+          />
+          <span className="text-sm text-slate-700">
+            {t('riders.isDefault')}
+            <span className="block text-xs text-slate-400">{t('riders.isDefaultHint')}</span>
+          </span>
         </label>
       </div>
 

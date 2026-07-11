@@ -78,23 +78,3 @@ export function validateCurrency(code: string): ValError | null {
   if (!isValidCurrency(code)) return { key: 'error.currencyInvalid', params: { code: code.toUpperCase() } }
   return null
 }
-
-/** Optional whole-number age ('' is allowed = unset). */
-export function validateAge(age: string): ValError | null {
-  const v = age.trim()
-  if (v === '') return null
-  if (!/^\d+$/.test(v)) return { key: 'error.ageNumber' }
-  return null
-}
-
-/** Both ages optional; when both set, min must not exceed max. */
-export function validateAgeRange(minAge: string, maxAge: string): ValError | null {
-  const minErr = validateAge(minAge)
-  if (minErr) return minErr
-  const maxErr = validateAge(maxAge)
-  if (maxErr) return maxErr
-  if (minAge.trim() !== '' && maxAge.trim() !== '' && Number(minAge) > Number(maxAge)) {
-    return { key: 'error.ageRange' }
-  }
-  return null
-}

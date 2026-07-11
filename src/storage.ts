@@ -11,7 +11,16 @@ function load(): AppState {
     return {
       networkName: parsed.networkName ?? '',
       supports: Array.isArray(parsed.supports) ? parsed.supports : [],
-      riderCategories: Array.isArray(parsed.riderCategories) ? parsed.riderCategories : [],
+      // Migrate older saved categories (which had min_age/max_age) to the
+      // spec-compliant shape, keeping only id/name/isDefault/eligibilityUrl.
+      riderCategories: Array.isArray(parsed.riderCategories)
+        ? parsed.riderCategories.map((c) => ({
+            id: c.id,
+            name: c.name,
+            isDefault: c.isDefault ?? false,
+            eligibilityUrl: c.eligibilityUrl ?? '',
+          }))
+        : [],
       // Products from an older saved state may lack riderCategoryId.
       products: Array.isArray(parsed.products)
         ? parsed.products.map((p) => ({ ...p, riderCategoryId: p.riderCategoryId ?? '' }))

@@ -17,9 +17,11 @@ your choice is remembered.
 3. **Supports (fare media)** — pick the `fare_media_type` **first** (this drives
    the name/id placeholders), then name it. The id auto-fills from the name but
    stays fully editable.
-4. **Rider categories & constraints** — optional eligibility constraints
-   (`min_age`, `max_age`, `eligibility_url`) that a product can target →
-   `rider_categories.txt`.
+4. **Rider categories & conditions** — optional rider groups (Adult, Youth,
+   Senior…) that a product can target → `rider_categories.txt`
+   (`rider_category_id`, `rider_category_name`, `is_default_fare_category`,
+   `eligibility_url`). At most one category can be the default. Age eligibility
+   is not part of the adopted spec, so it is expressed via `eligibility_url`.
 5. **Products** — define fare products (`fare_product_id`, name, `amount`,
    `currency`), pick which supports each is usable on, and optionally target a
    rider category.
@@ -35,7 +37,8 @@ back to keep editing.
 - **Amount** must be a non-negative number whose decimal places fit the
   currency's minor unit (e.g. `JPY` → 0, `BHD` → 3).
 - **Ids** must be unique and CSV-safe (no spaces, commas or quotes).
-- **Ages** must be whole numbers with `min ≤ max`.
+- **At most one** rider category may be marked as the default
+  (`is_default_fare_category`).
 
 ### How multi-support products are encoded
 

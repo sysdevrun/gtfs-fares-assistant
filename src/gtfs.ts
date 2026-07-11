@@ -30,8 +30,13 @@ export function generateFareMedia(supports: Support[]): string {
 
 /** Build rider_categories.txt content from the rider categories. */
 export function generateRiderCategories(categories: RiderCategory[]): string {
-  const header = ['rider_category_id', 'rider_category_name', 'min_age', 'max_age', 'eligibility_url']
-  const rows = categories.map((c) => [c.id, c.name, c.minAge, c.maxAge, c.eligibilityUrl])
+  const header = [
+    'rider_category_id',
+    'rider_category_name',
+    'is_default_fare_category',
+    'eligibility_url',
+  ]
+  const rows = categories.map((c) => [c.id, c.name, c.isDefault ? '1' : '0', c.eligibilityUrl])
   return toCsv(header, rows)
 }
 

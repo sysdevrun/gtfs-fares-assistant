@@ -83,19 +83,18 @@ const dict: Record<Lang, Record<string, string>> = {
     'supports.phName.3': 'Contactless bank card',
     'supports.phName.4': 'Mobile app',
 
-    'riders.title': 'Rider categories & constraints',
+    'riders.title': 'Rider categories & conditions',
     'riders.help':
-      'Optional eligibility constraints (age, conditions) that a product can target — each becomes a row in rider_categories.txt.',
+      'Optional rider groups (Adult, Youth, Senior…) that a product can target — each becomes a row in rider_categories.txt. Link conditions with an eligibility URL.',
     'riders.name': 'Name',
     'riders.id': 'rider_category_id',
-    'riders.minAge': 'Minimum age',
-    'riders.maxAge': 'Maximum age',
+    'riders.isDefault': 'Default category (is_default_fare_category)',
+    'riders.isDefaultHint': 'At most one category can be the default.',
+    'riders.defaultBadge': 'default',
     'riders.eligibilityUrl': 'Conditions URL (eligibility_url)',
     'riders.add': 'Add category',
     'riders.save': 'Save changes',
     'riders.phName': 'e.g. Youth',
-    'riders.ageAny': 'any',
-    'riders.age': 'age {min}–{max}',
 
     'products.title': 'Products',
     'products.help':
@@ -130,8 +129,6 @@ const dict: Record<Lang, Record<string, string>> = {
     'error.amountDecimals': '{currency} allows at most {max} decimals.',
     'error.currencyRequired': 'A currency is required.',
     'error.currencyInvalid': '"{code}" is not a valid ISO 4217 currency code.',
-    'error.ageNumber': 'Age must be a whole number of years.',
-    'error.ageRange': 'Minimum age cannot exceed maximum age.',
     'error.supportDuplicate': 'A support with id "{id}" already exists.',
     'error.productDuplicate': 'A product with id "{id}" already exists.',
     'error.riderDuplicate': 'A category with id "{id}" already exists.',
@@ -144,6 +141,8 @@ const dict: Record<Lang, Record<string, string>> = {
       'rider_categories.txt line {line}: skipped — invalid or missing rider_category_id.',
     'warn.riderDuplicate':
       'rider_categories.txt line {line}: skipped — duplicate rider_category_id "{id}".',
+    'warn.riderMultipleDefault':
+      'rider_categories.txt: more than one default category; kept the first, unset "{id}".',
     'warn.productInvalidId':
       'fare_products.txt line {line}: skipped — invalid or missing fare_product_id.',
     'warn.productCurrency':
@@ -220,17 +219,16 @@ const dict: Record<Lang, Record<string, string>> = {
 
     'riders.title': 'Catégories de voyageurs & conditions',
     'riders.help':
-      'Conditions d’éligibilité facultatives (âge, conditions) qu’un produit peut cibler — chacune devient une ligne de rider_categories.txt.',
+      'Groupes de voyageurs facultatifs (Adulte, Jeune, Senior…) qu’un produit peut cibler — chacun devient une ligne de rider_categories.txt. Reliez les conditions via une URL.',
     'riders.name': 'Nom',
     'riders.id': 'rider_category_id',
-    'riders.minAge': 'Âge minimum',
-    'riders.maxAge': 'Âge maximum',
+    'riders.isDefault': 'Catégorie par défaut (is_default_fare_category)',
+    'riders.isDefaultHint': 'Une seule catégorie peut être celle par défaut.',
+    'riders.defaultBadge': 'défaut',
     'riders.eligibilityUrl': 'URL des conditions (eligibility_url)',
     'riders.add': 'Ajouter une catégorie',
     'riders.save': 'Enregistrer',
     'riders.phName': 'ex. Jeune',
-    'riders.ageAny': 'illimité',
-    'riders.age': 'âge {min}–{max}',
 
     'products.title': 'Produits',
     'products.help':
@@ -265,8 +263,6 @@ const dict: Record<Lang, Record<string, string>> = {
     'error.amountDecimals': '{currency} n’autorise au plus que {max} décimales.',
     'error.currencyRequired': 'Une devise est requise.',
     'error.currencyInvalid': '« {code} » n’est pas un code de devise ISO 4217 valide.',
-    'error.ageNumber': 'L’âge doit être un nombre entier d’années.',
-    'error.ageRange': 'L’âge minimum ne peut pas dépasser l’âge maximum.',
     'error.supportDuplicate': 'Un support avec l’identifiant « {id} » existe déjà.',
     'error.productDuplicate': 'Un produit avec l’identifiant « {id} » existe déjà.',
     'error.riderDuplicate': 'Une catégorie avec l’identifiant « {id} » existe déjà.',
@@ -281,6 +277,8 @@ const dict: Record<Lang, Record<string, string>> = {
       'rider_categories.txt ligne {line} : ignorée — rider_category_id manquant ou invalide.',
     'warn.riderDuplicate':
       'rider_categories.txt ligne {line} : ignorée — rider_category_id « {id} » en double.',
+    'warn.riderMultipleDefault':
+      'rider_categories.txt : plusieurs catégories par défaut ; la première est conservée, « {id} » désactivée.',
     'warn.productInvalidId':
       'fare_products.txt ligne {line} : ignorée — fare_product_id manquant ou invalide.',
     'warn.productCurrency':

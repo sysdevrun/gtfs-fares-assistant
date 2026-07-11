@@ -25,16 +25,14 @@ export interface Support {
   type: FareMediaType
 }
 
-/** A rider category — an eligibility constraint (age, conditions) a product can target. */
+/** A rider category — an eligibility group (Adult, Youth, Senior…) a product can target. */
 export interface RiderCategory {
   /** rider_category_id (required, unique) */
   id: string
   /** rider_category_name (required) */
   name: string
-  /** min_age (optional) — kept as string ('' when unset) */
-  minAge: string
-  /** max_age (optional) */
-  maxAge: string
+  /** is_default_fare_category — at most one category may be the default. */
+  isDefault: boolean
   /** eligibility_url (optional) — a link to the conditions */
   eligibilityUrl: string
 }
