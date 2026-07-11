@@ -1,0 +1,5 @@
+fare_media_id,fare_media_name,fare_media_type
+paper,Ticket Papier,1
+mticket,M-Ticket (Ticket Électronique),4
+ypass,Carte yPass Car Jaune,2
+reunipass,Carte Réuni'Pass,2

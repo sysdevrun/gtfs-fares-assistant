@@ -1,0 +1,35 @@
+fare_product_id,fare_product_name,rider_category_id,fare_media_id,amount,currency
+ticket_unitaire,Ticket Unitaire,tout_public,paper,2.00,EUR
+ticket_unitaire,Ticket Unitaire,tout_public,mticket,2.00,EUR
+ticket_unitaire,Ticket Unitaire,tout_public,ypass,2.00,EUR
+carnet_5,Carnet de 5 tickets,tout_public,mticket,8.00,EUR
+carnet_5,Carnet de 5 tickets,tout_public,ypass,8.00,EUR
+ticket_journee,Ticket Journée,tout_public,ypass,6.00,EUR
+ticket_famille,Ticket Famille,famille,paper,10.00,EUR
+abo_plus26_mensuel,Abonnement +26 ans (mensuel),tout_public,ypass,38.00,EUR
+abo_plus26_trim,Abonnement +26 ans (trimestriel),tout_public,ypass,100.00,EUR
+abo_plus26_annuel,Abonnement +26 ans (annuel),tout_public,ypass,360.00,EUR
+ticket_marmay,Ticket Marmay,marmay,paper,1.00,EUR
+ticket_marmay,Ticket Marmay,marmay,mticket,1.00,EUR
+ticket_marmay,Ticket Marmay,marmay,ypass,1.00,EUR
+abo_moins26_mensuel,Abonnement -26 ans (mensuel),moins_26,ypass,15.00,EUR
+abo_moins26_trim,Abonnement -26 ans (trimestriel),moins_26,ypass,30.00,EUR
+abo_moins26_annuel,Abonnement -26 ans (annuel),moins_26,ypass,70.00,EUR
+abo_dem_emploi_trim,Abonnement Demandeur d'emploi (trimestriel),demandeur_emploi,mticket,0.00,EUR
+abo_dem_emploi_trim,Abonnement Demandeur d'emploi (trimestriel),demandeur_emploi,ypass,0.00,EUR
+abo_anc_comb_annuel,Abonnement Ancien Combattant (annuel),ancien_combattant,ypass,0.00,EUR
+batkare_1sem,Bat'Karé 1 semaine,tout_public,ypass,15.00,EUR
+batkare_1sem,Bat'Karé 1 semaine,tout_public,mticket,15.00,EUR
+batkare_2sem,Bat'Karé 2 semaines,tout_public,ypass,20.00,EUR
+batkare_2sem,Bat'Karé 2 semaines,tout_public,mticket,20.00,EUR
+batkare_3sem,Bat'Karé 3 semaines,tout_public,ypass,28.00,EUR
+batkare_3sem,Bat'Karé 3 semaines,tout_public,mticket,28.00,EUR
+reunipass_tp_mensuel,Réuni'Pass Tout Public (mensuel),tout_public,reunipass,60.00,EUR
+reunipass_tp_trim,Réuni'Pass Tout Public (trimestriel),tout_public,reunipass,140.00,EUR
+reunipass_tp_annuel,Réuni'Pass Tout Public (annuel),tout_public,reunipass,520.00,EUR
+reunipass_etudiant,Réuni'Pass Étudiant (annuel),etudiant,reunipass,0.00,EUR
+reunipass_stagiaire,Réuni'Pass Stagiaire (trimestriel),stagiaire,reunipass,0.00,EUR
+reunipass_senior,Réuni'Pass Senior,senior,reunipass,0.00,EUR
+reunipass_handicap,Réuni'Pass Handicap,handicap,reunipass,0.00,EUR
+ypass_accompagnant,yPass Accompagnant,accompagnant,ypass,0.00,EUR
+gratuit_moins_3,Gratuité enfant de moins de 3 ans,moins_3,,0.00,EUR

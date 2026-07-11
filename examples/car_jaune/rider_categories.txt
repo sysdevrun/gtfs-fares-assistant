@@ -1,0 +1,13 @@
+rider_category_id,rider_category_name,is_default_fare_category,eligibility_url
+tout_public,Tout Public,1,
+moins_26,Moins de 26 ans,0,https://www.carjaune.re
+marmay,Enfant Marmay (3 à 11 ans inclus),0,https://www.carjaune.re
+moins_3,Enfant de moins de 3 ans,0,https://www.carjaune.re
+famille,Famille (2 adultes + 3 enfants -18 ans),0,https://www.carjaune.re
+demandeur_emploi,Demandeur d'emploi,0,https://www.carjaune.re
+ancien_combattant,Ancien Combattant,0,https://www.carjaune.re
+etudiant,Étudiant,0,https://www.reunipassetudiant.re
+stagiaire,Stagiaire de la Formation Professionnelle,0,https://www.carjaune.re
+senior,"Senior (65 ans et +, résidant à La Réunion)",0,https://www.carjaune.re
+handicap,Personne handicapée (taux >= 50%),0,https://www.carjaune.re
+accompagnant,Accompagnant Réuni'Pass Handicap,0,https://www.carjaune.re
