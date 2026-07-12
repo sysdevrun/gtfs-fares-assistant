@@ -114,13 +114,13 @@ export default function AiFillSection({ onImport }: Props) {
   return (
     <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
       <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold text-slate-800">{t('ai.title')}</h2>
           <p className="mt-1 text-sm text-slate-500">{t('ai.help')}</p>
         </div>
         <button
           onClick={() => setOpen(true)}
-          className="shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="w-full whitespace-normal break-words rounded-md bg-blue-600 px-4 py-2 text-center text-sm font-medium text-white hover:bg-blue-700 sm:w-auto"
         >
           {t('ai.button')}
         </button>
@@ -138,10 +138,12 @@ export default function AiFillSection({ onImport }: Props) {
         >
           <div className="my-8 w-full max-w-xl rounded-xl bg-white p-6 shadow-xl">
             <div className="mb-4 flex items-start justify-between gap-4">
-              <h3 className="text-lg font-semibold text-slate-800">{t('ai.button')}</h3>
+              <h3 className="min-w-0 break-words text-lg font-semibold text-slate-800">
+                {t('ai.button')}
+              </h3>
               <button
                 onClick={() => !busy && setOpen(false)}
-                className="text-slate-400 hover:text-slate-600"
+                className="shrink-0 text-slate-400 hover:text-slate-600"
                 aria-label={t('common.cancel')}
               >
                 ✕
