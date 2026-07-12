@@ -246,20 +246,33 @@ export default function AiFillSection({ onImport }: Props) {
             )}
 
             <div className="mt-2 flex items-center justify-end gap-2">
-              <button
-                onClick={() => !busy && setOpen(false)}
-                className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
-                disabled={busy}
-              >
-                {summary ? t('ai.close') : t('common.cancel')}
-              </button>
-              <button
-                onClick={run}
-                disabled={!canRun}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-              >
-                {busy ? t('ai.extracting') : t('ai.extract')}
-              </button>
+              {summary ? (
+                // Extraction succeeded: nothing to cancel, and re-running would
+                // just repeat the same call — offer a single button to the editor.
+                <button
+                  onClick={() => setOpen(false)}
+                  className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  {t('ai.reviewData')}
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={() => !busy && setOpen(false)}
+                    className="rounded-md border border-slate-300 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-60"
+                    disabled={busy}
+                  >
+                    {t('common.cancel')}
+                  </button>
+                  <button
+                    onClick={run}
+                    disabled={!canRun}
+                    className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+                  >
+                    {busy ? t('ai.extracting') : t('ai.extract')}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

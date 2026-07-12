@@ -72,12 +72,10 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.chooseFiles': 'Add files…',
     'ai.extract': 'Extract',
     'ai.extracting': 'Extracting…',
-    'ai.close': 'Close',
+    'ai.reviewData': 'Review data',
     'ai.summary':
       'AI filled {supports} supports, {riders} rider categories and {products} products. Review them below.',
     'ai.warnings': '{count} notes to review',
-    'ai.warn.reviewReminder':
-      'The AI can make mistakes — check every id, price and currency before downloading.',
     'ai.warn.idFixed': '{kind} "{from}" was adjusted to "{to}" to be CSV-safe.',
     'ai.warn.multipleDefault':
       'More than one default rider category was proposed; kept "{id}" as the only default.',
@@ -278,12 +276,10 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.chooseFiles': 'Ajouter des fichiers…',
     'ai.extract': 'Extraire',
     'ai.extracting': 'Extraction…',
-    'ai.close': 'Fermer',
+    'ai.reviewData': 'Relire les données',
     'ai.summary':
       'L’IA a rempli {supports} supports, {riders} catégories de voyageurs et {products} produits. Relisez-les ci-dessous.',
     'ai.warnings': '{count} points à vérifier',
-    'ai.warn.reviewReminder':
-      'L’IA peut se tromper — vérifiez chaque identifiant, prix et devise avant de télécharger.',
     'ai.warn.idFixed': '{kind} « {from} » a été ajusté en « {to} » pour rester compatible CSV.',
     'ai.warn.multipleDefault':
       'Plusieurs catégories par défaut proposées ; « {id} » conservée comme seule catégorie par défaut.',

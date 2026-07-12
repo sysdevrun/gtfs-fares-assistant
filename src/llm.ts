@@ -306,10 +306,9 @@ function normalize(raw: RawExtraction, t: TFunc): ImportResult {
     })
   }
 
-  if (supports.length || riderCategories.length || products.length) {
-    warnings.unshift(t('ai.warn.reviewReminder'))
-  }
-
+  // Only surface specific things worth checking (fixed ids, bad currency,
+  // dropped references…). A generic "the AI can be wrong" note isn't actionable,
+  // so it is not added here — the block stays hidden when there's nothing to fix.
   return { networkName: raw.networkName?.trim() || undefined, supports, riderCategories, products, warnings }
 }
 
