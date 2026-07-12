@@ -115,7 +115,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'products.add': 'Add product',
     'products.save': 'Save changes',
 
-    'legrules.title': 'Leg & transfer rules (optional)',
+    'legrules.title': 'Validity duration and transfers',
     'legrules.hint':
       'No network/area — transfers apply within this product only, and are free.',
     'legrules.transfers': 'Transfers allowed',
@@ -283,7 +283,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'products.add': 'Ajouter un produit',
     'products.save': 'Enregistrer',
 
-    'legrules.title': 'Règles de leg & correspondance (optionnel)',
+    'legrules.title': 'Durée de validité et correspondances',
     'legrules.hint':
       'Sans réseau/zone — les correspondances ne s’appliquent qu’à ce produit, et sont gratuites.',
     'legrules.transfers': 'Correspondances autorisées',
