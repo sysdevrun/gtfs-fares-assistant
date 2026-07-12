@@ -1,0 +1,5 @@
+from_leg_group_id,to_leg_group_id,transfer_count,duration_limit,duration_limit_type,fare_transfer_type,fare_product_id
+ticket_unitaire_leg,ticket_unitaire_leg,-1,10800,1,0,
+ticket_journee_leg,ticket_journee_leg,-1,86400,1,0,
+ticket_famille_leg,ticket_famille_leg,-1,86400,1,0,
+ticket_marmay_leg,ticket_marmay_leg,-1,10800,1,0,

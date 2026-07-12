@@ -1,0 +1,5 @@
+leg_group_id,fare_product_id
+ticket_unitaire_leg,ticket_unitaire
+ticket_journee_leg,ticket_journee
+ticket_famille_leg,ticket_famille
+ticket_marmay_leg,ticket_marmay
