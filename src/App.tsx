@@ -4,6 +4,7 @@ import RiderCategoriesSection from './components/RiderCategoriesSection'
 import ProductsSection from './components/ProductsSection'
 import PreviewSection from './components/PreviewSection'
 import ImportSection from './components/ImportSection'
+import AiFillSection from './components/AiFillSection'
 import { generateFiles, zipFilename } from './gtfs'
 import { clearStorage, usePersistentState } from './storage'
 import { EMPTY_STATE } from './types'
@@ -92,6 +93,8 @@ export default function App() {
         </section>
 
         <ImportSection onImport={applyImport} />
+
+        <AiFillSection onImport={applyImport} />
 
         <SupportsSection
           supports={state.supports}

@@ -6,6 +6,11 @@ A **frontend-only** React + TypeScript + Tailwind CSS app to build GTFS
 and [`fare_products.txt`](https://gtfs.org/documentation/schedule/reference/#fare_productstxt) —
 entirely in the browser. No backend, no data leaves your machine.
 
+> **One optional exception:** the *Fill data with AI* feature (below) sends the
+> documents you attach directly from your browser to the Anthropic (Claude) API,
+> using your own API key. It is opt-in and clearly flagged; everything else runs
+> fully offline.
+
 Available in **English and French** — it defaults to the browser language and
 your choice is remembered.
 
@@ -28,6 +33,30 @@ your choice is remembered.
    rules** (see below).
 6. **Preview & download** — live preview of each `.txt` file; download them
    individually or all together as a zip (built in-browser with JSZip).
+
+### Fill data with AI (optional)
+
+Instead of typing everything by hand, you can **let Claude read your fare
+schedule** and pre-fill the supports, rider categories and products for you:
+
+1. Click **Ask AI to fill in data from my fare schedule**.
+2. Paste your own **Anthropic API key** (create one at
+   [console.anthropic.com](https://console.anthropic.com/settings/keys)). It is
+   stored only in this browser's `localStorage`.
+3. Attach one or more **PDF, image (PNG/JPG…) or Excel/CSV** files describing the
+   fares. PDFs and images are sent to Claude natively; Excel files are converted
+   to CSV **in your browser** first (via SheetJS).
+4. Pick a model — **Claude Sonnet 5** (default, faster & cheaper) or **Claude
+   Opus 4.8** (highest accuracy for hard documents).
+5. Click **Extract**. The result replaces the current data (with the usual
+   confirm-before-replace guard) and lands in the normal editor, where **you
+   review and correct everything** before downloading.
+
+The extraction runs directly from your browser against the Anthropic API with
+your key — no server of ours is involved — and the heavy SDK is only downloaded
+the first time you run an extraction. The AI can make mistakes: ids, prices and
+currencies are always yours to verify, and any that look off are flagged in a
+review list.
 
 ### Leg & transfer rules (optional)
 

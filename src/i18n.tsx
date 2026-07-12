@@ -56,6 +56,44 @@ const dict: Record<Lang, Record<string, string>> = {
     'import.errorNoFiles': 'No fare_media.txt or fare_products.txt found in the archive.',
     'import.errorGeneric': 'Failed to read the archive.',
 
+    'ai.title': 'Fill data with AI',
+    'ai.help':
+      'Upload PDFs, images or Excel files describing your fares and let Claude fill the supports, categories and products — then review everything below.',
+    'ai.button': 'Ask AI to fill in data from my fare schedule',
+    'ai.privacy':
+      'This is the only feature that sends data off your machine: the files you attach are sent directly from your browser to the Anthropic (Claude) API using your own key. Nothing passes through any server of ours.',
+    'ai.apiKey': 'Anthropic API key',
+    'ai.apiKeyHint': 'Stored only in this browser (localStorage). Create one at',
+    'ai.model': 'Model',
+    'ai.model.sonnet': 'Claude Sonnet 5 — faster & cheaper (recommended)',
+    'ai.model.opus': 'Claude Opus 4.8 — highest accuracy for hard documents',
+    'ai.files': 'Fare documents',
+    'ai.filesHint': 'PDF, images (PNG/JPG…) and Excel/CSV. You can add several files.',
+    'ai.chooseFiles': 'Add files…',
+    'ai.extract': 'Extract',
+    'ai.extracting': 'Extracting…',
+    'ai.close': 'Close',
+    'ai.summary':
+      'AI filled {supports} supports, {riders} rider categories and {products} products. Review them below.',
+    'ai.warnings': '{count} notes to review',
+    'ai.warn.reviewReminder':
+      'The AI can make mistakes — check every id, price and currency before downloading.',
+    'ai.warn.idFixed': '{kind} "{from}" was adjusted to "{to}" to be CSV-safe.',
+    'ai.warn.multipleDefault':
+      'More than one default rider category was proposed; kept "{id}" as the only default.',
+    'ai.warn.currencyInvalid': 'Product "{id}": currency "{code}" is not a valid ISO 4217 code — please review.',
+    'ai.warn.amountInvalid': 'Product "{id}": amount "{amount}" may be invalid for {currency} — please review.',
+    'ai.warn.supportRef': 'Product "{id}" references an unknown support "{ref}"; it was dropped.',
+    'ai.warn.riderRef': 'Product "{id}" references an unknown rider category "{ref}"; it was dropped.',
+    'ai.error.refusal': 'Claude declined to process these documents. Try different files.',
+    'ai.error.noOutput': 'The model returned no usable output. Try again.',
+    'ai.error.parse': 'Could not parse the model output. Try again.',
+    'ai.error.empty': 'No fares could be extracted from these documents.',
+    'ai.error.auth': 'The API key was rejected. Check that it is a valid Anthropic key.',
+    'ai.error.rateLimit': 'Rate limited by the API. Wait a moment and try again.',
+    'ai.error.network': 'Could not reach the Anthropic API. Check your connection.',
+    'ai.error.generic': 'Extraction failed. Please try again.',
+
     'supports.title': 'Supports (fare media)',
     'supports.help':
       'The media on which a fare product can be carried — paper ticket, transit card, mobile app…',
@@ -223,6 +261,47 @@ const dict: Record<Lang, Record<string, string>> = {
     'import.warnings': '{count} avertissements lors de l’import',
     'import.errorNoFiles': 'Aucun fichier fare_media.txt ou fare_products.txt trouvé dans l’archive.',
     'import.errorGeneric': 'Échec de la lecture de l’archive.',
+
+    'ai.title': 'Remplir les données avec l’IA',
+    'ai.help':
+      'Envoyez des PDF, images ou fichiers Excel décrivant vos tarifs et laissez Claude remplir les supports, catégories et produits — puis relisez le tout ci-dessous.',
+    'ai.button': 'Demander à l’IA de remplir les données depuis ma gamme tarifaire',
+    'ai.privacy':
+      'C’est la seule fonctionnalité qui envoie des données hors de votre machine : les fichiers joints sont transmis directement depuis votre navigateur à l’API Anthropic (Claude) avec votre propre clé. Rien ne transite par un de nos serveurs.',
+    'ai.apiKey': 'Clé API Anthropic',
+    'ai.apiKeyHint': 'Stockée uniquement dans ce navigateur (localStorage). Créez-en une sur',
+    'ai.model': 'Modèle',
+    'ai.model.sonnet': 'Claude Sonnet 5 — plus rapide et économique (recommandé)',
+    'ai.model.opus': 'Claude Opus 4.8 — précision maximale pour les documents difficiles',
+    'ai.files': 'Documents tarifaires',
+    'ai.filesHint': 'PDF, images (PNG/JPG…) et Excel/CSV. Vous pouvez ajouter plusieurs fichiers.',
+    'ai.chooseFiles': 'Ajouter des fichiers…',
+    'ai.extract': 'Extraire',
+    'ai.extracting': 'Extraction…',
+    'ai.close': 'Fermer',
+    'ai.summary':
+      'L’IA a rempli {supports} supports, {riders} catégories de voyageurs et {products} produits. Relisez-les ci-dessous.',
+    'ai.warnings': '{count} points à vérifier',
+    'ai.warn.reviewReminder':
+      'L’IA peut se tromper — vérifiez chaque identifiant, prix et devise avant de télécharger.',
+    'ai.warn.idFixed': '{kind} « {from} » a été ajusté en « {to} » pour rester compatible CSV.',
+    'ai.warn.multipleDefault':
+      'Plusieurs catégories par défaut proposées ; « {id} » conservée comme seule catégorie par défaut.',
+    'ai.warn.currencyInvalid':
+      'Produit « {id} » : la devise « {code} » n’est pas un code ISO 4217 valide — à vérifier.',
+    'ai.warn.amountInvalid':
+      'Produit « {id} » : le montant « {amount} » peut être invalide pour {currency} — à vérifier.',
+    'ai.warn.supportRef': 'Le produit « {id} » référence un support inconnu « {ref} » ; il a été ignoré.',
+    'ai.warn.riderRef':
+      'Le produit « {id} » référence une catégorie inconnue « {ref} » ; elle a été ignorée.',
+    'ai.error.refusal': 'Claude a refusé de traiter ces documents. Essayez d’autres fichiers.',
+    'ai.error.noOutput': 'Le modèle n’a renvoyé aucun résultat exploitable. Réessayez.',
+    'ai.error.parse': 'Impossible d’analyser la réponse du modèle. Réessayez.',
+    'ai.error.empty': 'Aucun tarif n’a pu être extrait de ces documents.',
+    'ai.error.auth': 'La clé API a été refusée. Vérifiez qu’il s’agit d’une clé Anthropic valide.',
+    'ai.error.rateLimit': 'Limite de débit atteinte. Patientez un instant et réessayez.',
+    'ai.error.network': 'Impossible de joindre l’API Anthropic. Vérifiez votre connexion.',
+    'ai.error.generic': 'L’extraction a échoué. Veuillez réessayer.',
 
     'supports.title': 'Supports (médias tarifaires)',
     'supports.help':
