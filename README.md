@@ -24,9 +24,26 @@ your choice is remembered.
    is not part of the adopted spec, so it is expressed via `eligibility_url`.
 5. **Products** — define fare products (`fare_product_id`, name, `amount`,
    `currency`), pick which supports each is usable on, and optionally target a
-   rider category.
+   rider category. Each product may also carry **optional leg & transfer
+   rules** (see below).
 6. **Preview & download** — live preview of each `.txt` file; download them
    individually or all together as a zip (built in-browser with JSZip).
+
+### Leg & transfer rules (optional)
+
+A product can optionally emit `fare_leg_rules.txt` and `fare_transfer_rules.txt`
+to express **how many transfers are allowed** and **how long the ticket is
+valid**. Kept deliberately simple — **no network / area / timeframe** support:
+
+- one leg group per product (transfers apply within the same product);
+- transfers are always **free** (`fare_transfer_type = 0`, no transfer product);
+- **transfers**: none, a fixed count, or unlimited (`transfer_count = -1`);
+- **validity**: an optional duration entered in minutes (written to the file in
+  seconds), with a selectable `duration_limit_type` (0–3).
+
+Example — a 3-hour ticket with unlimited transfers: transfers *unlimited*,
+duration *180 min* → `transfer_count = -1`, `duration_limit = 10800`.
+These two files are only emitted when at least one product defines them.
 
 Everything you enter is saved to **localStorage**, so you can leave and come
 back to keep editing.

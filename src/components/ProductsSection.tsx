@@ -1,8 +1,23 @@
 import { useState } from 'react'
-import type { Product, RiderCategory, Support } from '../types'
+import type { Product, ProductLegRules, RiderCategory, Support } from '../types'
 import { slugify } from '../gtfs'
-import { validateAmount, validateCurrency, validateId } from '../validation'
+import {
+  validateAmount,
+  validateCurrency,
+  validateDurationMinutes,
+  validateId,
+  validateTransferCount,
+} from '../validation'
 import { useT } from '../i18n'
+
+/** Format a whole number of minutes as e.g. "1 h 30 min", "3 h", "45 min". */
+function formatHM(totalMinutes: number): string {
+  const h = Math.floor(totalMinutes / 60)
+  const m = totalMinutes % 60
+  if (h && m) return `${h} h ${m} min`
+  if (h) return `${h} h`
+  return `${m} min`
+}
 
 interface Props {
   products: Product[]
@@ -19,6 +34,12 @@ interface Draft {
   supportIds: string[]
   riderCategoryId: string
   idTouched: boolean
+  // Optional leg & transfer rules.
+  legRulesEnabled: boolean
+  transferPolicy: 'none' | 'limited' | 'unlimited'
+  transferCount: string
+  durationMinutes: string
+  durationLimitType: 0 | 1 | 2 | 3
 }
 
 const COMMON_CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'AUD', 'JPY']
@@ -31,6 +52,11 @@ const emptyDraft: Draft = {
   supportIds: [],
   riderCategoryId: '',
   idTouched: false,
+  legRulesEnabled: false,
+  transferPolicy: 'none',
+  transferCount: '',
+  durationMinutes: '',
+  durationLimitType: 1,
 }
 
 export default function ProductsSection({ products, supports, riderCategories, onChange }: Props) {
@@ -57,6 +83,11 @@ export default function ProductsSection({ products, supports, riderCategories, o
         ? p.riderCategoryId
         : '',
       idTouched: true,
+      legRulesEnabled: !!p.legRules,
+      transferPolicy: p.legRules?.transferPolicy ?? 'none',
+      transferCount: p.legRules?.transferCount ?? '',
+      durationMinutes: p.legRules?.durationMinutes ?? '',
+      durationLimitType: p.legRules?.durationLimitType ?? 1,
     })
     setEditingId(p.id)
     setError(null)
@@ -93,6 +124,29 @@ export default function ProductsSection({ products, supports, riderCategories, o
       setError(t('error.productDuplicate', { id }))
       return
     }
+    let legRules: ProductLegRules | undefined
+    if (draft.legRulesEnabled) {
+      if (draft.transferPolicy === 'limited') {
+        const countError = validateTransferCount(draft.transferCount)
+        if (countError) {
+          setError(t(countError.key, countError.params))
+          return
+        }
+      }
+      if (draft.transferPolicy !== 'none') {
+        const durationError = validateDurationMinutes(draft.durationMinutes)
+        if (durationError) {
+          setError(t(durationError.key, durationError.params))
+          return
+        }
+      }
+      legRules = {
+        transferPolicy: draft.transferPolicy,
+        transferCount: draft.transferPolicy === 'limited' ? draft.transferCount.trim() : '',
+        durationMinutes: draft.transferPolicy !== 'none' ? draft.durationMinutes.trim() : '',
+        durationLimitType: draft.durationLimitType,
+      }
+    }
     const next: Product = {
       id,
       name: draft.name.trim(),
@@ -100,6 +154,7 @@ export default function ProductsSection({ products, supports, riderCategories, o
       currency: draft.currency.trim().toUpperCase(),
       supportIds: draft.supportIds,
       riderCategoryId: draft.riderCategoryId,
+      ...(legRules ? { legRules } : {}),
     }
     if (editingId) {
       onChange(products.map((p) => (p.id === editingId ? next : p)))
@@ -128,6 +183,18 @@ export default function ProductsSection({ products, supports, riderCategories, o
   }
   const isDefaultCategory = (id: string) =>
     riderCategories.find((x) => x.id === id)?.isDefault ?? false
+
+  const legRulesSummary = (lr: NonNullable<Product['legRules']>): string => {
+    let s: string
+    if (lr.transferPolicy === 'unlimited') s = t('legrules.summaryUnlimited')
+    else if (lr.transferPolicy === 'limited')
+      s = t('legrules.summaryCount', { n: lr.transferCount || '0' })
+    else s = t('legrules.summaryNoTransfer')
+    if (lr.transferPolicy !== 'none' && lr.durationMinutes.trim() !== '') {
+      s += ' · ' + formatHM(Number(lr.durationMinutes))
+    }
+    return s
+  }
 
   const inputBase =
     'mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500'
@@ -175,6 +242,9 @@ export default function ProductsSection({ products, supports, riderCategories, o
                     <span className="italic">{t('products.mediaIndependent')}</span>
                   )}
                 </div>
+                {p.legRules && (
+                  <div className="truncate text-xs text-slate-400">↻ {legRulesSummary(p.legRules)}</div>
+                )}
               </div>
               <div className="flex shrink-0 gap-2">
                 <button
@@ -288,6 +358,104 @@ export default function ProductsSection({ products, supports, riderCategories, o
                 </button>
               )
             })}
+          </div>
+        )}
+      </div>
+
+      {/* Optional leg & transfer rules */}
+      <div className="mt-4 rounded-lg border border-slate-200 p-3">
+        <label className="flex items-start gap-2">
+          <input
+            type="checkbox"
+            checked={draft.legRulesEnabled}
+            onChange={(e) => setDraft((d) => ({ ...d, legRulesEnabled: e.target.checked }))}
+            className="mt-0.5 h-4 w-4"
+          />
+          <span className="text-sm font-medium text-slate-700">
+            {t('legrules.enable')}
+            <span className="block text-xs font-normal text-slate-400">{t('legrules.hint')}</span>
+          </span>
+        </label>
+
+        {draft.legRulesEnabled && (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <label className="block">
+              <span className="text-sm font-medium text-slate-700">{t('legrules.transfers')}</span>
+              <select
+                value={draft.transferPolicy}
+                onChange={(e) =>
+                  setDraft((d) => ({
+                    ...d,
+                    transferPolicy: e.target.value as Draft['transferPolicy'],
+                  }))
+                }
+                className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="none">{t('legrules.transfers.none')}</option>
+                <option value="limited">{t('legrules.transfers.limited')}</option>
+                <option value="unlimited">{t('legrules.transfers.unlimited')}</option>
+              </select>
+            </label>
+
+            {draft.transferPolicy === 'limited' && (
+              <label className="block">
+                <span className="text-sm font-medium text-slate-700">{t('legrules.count')}</span>
+                <input
+                  value={draft.transferCount}
+                  onChange={(e) => setDraft((d) => ({ ...d, transferCount: e.target.value }))}
+                  inputMode="numeric"
+                  placeholder="1"
+                  className={inputBase}
+                />
+              </label>
+            )}
+
+            {draft.transferPolicy !== 'none' && (
+              <>
+                <label className="block">
+                  <span className="text-sm font-medium text-slate-700">
+                    {t('legrules.durationMinutes')}{' '}
+                    <span className="text-slate-400">({t('common.optional')})</span>
+                  </span>
+                  <input
+                    value={draft.durationMinutes}
+                    onChange={(e) => setDraft((d) => ({ ...d, durationMinutes: e.target.value }))}
+                    inputMode="numeric"
+                    placeholder="180"
+                    className={inputBase}
+                  />
+                  <span className="mt-1 block text-xs text-slate-400">
+                    {draft.durationMinutes.trim() !== '' && /^\d+$/.test(draft.durationMinutes.trim())
+                      ? formatHM(Number(draft.durationMinutes))
+                      : t('legrules.noLimit')}
+                  </span>
+                </label>
+
+                {draft.durationMinutes.trim() !== '' && (
+                  <label className="block">
+                    <span className="text-sm font-medium text-slate-700">
+                      {t('legrules.durationType')}
+                    </span>
+                    <select
+                      value={draft.durationLimitType}
+                      onChange={(e) =>
+                        setDraft((d) => ({
+                          ...d,
+                          durationLimitType: Number(e.target.value) as 0 | 1 | 2 | 3,
+                        }))
+                      }
+                      className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    >
+                      {[0, 1, 2, 3].map((v) => (
+                        <option key={v} value={v}>
+                          {t(`legrules.durationType.${v}`)}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </>
+            )}
           </div>
         )}
       </div>

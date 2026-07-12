@@ -78,3 +78,18 @@ export function validateCurrency(code: string): ValError | null {
   if (!isValidCurrency(code)) return { key: 'error.currencyInvalid', params: { code: code.toUpperCase() } }
   return null
 }
+
+/** Positive integer number of transfers. */
+export function validateTransferCount(count: string): ValError | null {
+  const v = count.trim()
+  if (!/^\d+$/.test(v) || Number(v) < 1) return { key: 'error.transferCount' }
+  return null
+}
+
+/** Optional positive whole number of minutes ('' = no limit). */
+export function validateDurationMinutes(minutes: string): ValError | null {
+  const v = minutes.trim()
+  if (v === '') return null
+  if (!/^\d+$/.test(v) || Number(v) < 1) return { key: 'error.durationNumber' }
+  return null
+}

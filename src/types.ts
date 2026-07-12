@@ -37,6 +37,22 @@ export interface RiderCategory {
   eligibilityUrl: string
 }
 
+/**
+ * Optional leg & transfer rules for a product (kept simple: no area / network /
+ * timeframe support). Each product gets its own leg group, so transfers only
+ * apply within the same product. Transfers are always free (fare_transfer_type 0).
+ */
+export interface ProductLegRules {
+  /** none = single leg, no transfer; limited = a fixed count; unlimited = -1 */
+  transferPolicy: 'none' | 'limited' | 'unlimited'
+  /** number of transfers, used when transferPolicy is 'limited' (positive int) */
+  transferCount: string
+  /** validity window in minutes ('' = no limit); written to the file in seconds */
+  durationMinutes: string
+  /** duration_limit_type (0–3): which validation events bound the window */
+  durationLimitType: 0 | 1 | 2 | 3
+}
+
 /** A fare product. */
 export interface Product {
   /** fare_product_id (required, unique) */
@@ -55,6 +71,8 @@ export interface Product {
   supportIds: string[]
   /** rider_category_id this product targets ('' = no constraint, all riders). */
   riderCategoryId: string
+  /** Optional leg & transfer rules (undefined = product has no leg/transfer rules). */
+  legRules?: ProductLegRules
 }
 
 export interface AppState {

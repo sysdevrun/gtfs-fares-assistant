@@ -213,6 +213,105 @@ function networkFromFilename(filename: string): string | undefined {
   return slug.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim()
 }
 
+const EXTRA_LEG_COLUMNS = [
+  'network_id',
+  'from_area_id',
+  'to_area_id',
+  'from_timeframe_group_id',
+  'to_timeframe_group_id',
+]
+
+/**
+ * Attach leg & transfer rules to products from fare_leg_rules.txt and
+ * fare_transfer_rules.txt. Only the simple model is supported: one leg group
+ * per product, self-transfers, free transfers.
+ */
+function applyLegAndTransferRules(
+  products: Product[],
+  legRecords: Record<string, string>[] | null,
+  transferRecords: Record<string, string>[] | null,
+  warnings: string[],
+  t: TFunc,
+) {
+  const byProductId = new Map(products.map((p) => [p.id, p]))
+  // leg_group_id -> product, built from fare_leg_rules.
+  const groupToProduct = new Map<string, Product>()
+
+  if (legRecords) {
+    let extraWarned = false
+    legRecords.forEach((rec, i) => {
+      const line = i + 2
+      if (!extraWarned && EXTRA_LEG_COLUMNS.some((c) => (rec[c] ?? '').trim() !== '')) {
+        warnings.push(t('warn.legRulesExtraColumns'))
+        extraWarned = true
+      }
+      const productId = rec['fare_product_id'] ?? ''
+      const product = byProductId.get(productId)
+      if (!product) {
+        warnings.push(t('warn.legRuleUnknownProduct', { line, id: productId }))
+        return
+      }
+      // Default: a leg rule with no transfers.
+      product.legRules = {
+        transferPolicy: 'none',
+        transferCount: '',
+        durationMinutes: '',
+        durationLimitType: 1,
+      }
+      const group = (rec['leg_group_id'] ?? '').trim()
+      if (group) groupToProduct.set(group, product)
+    })
+  }
+
+  if (transferRecords) {
+    transferRecords.forEach((rec) => {
+      const from = (rec['from_leg_group_id'] ?? '').trim()
+      const to = (rec['to_leg_group_id'] ?? '').trim()
+      if (from !== to) {
+        warnings.push(t('warn.transferCrossGroup', { from, to }))
+        return
+      }
+      const product = groupToProduct.get(from)
+      if (!product || !product.legRules) {
+        warnings.push(t('warn.transferUnknownGroup', { group: from }))
+        return
+      }
+      const ttype = (rec['fare_transfer_type'] ?? '').trim()
+      const tproduct = (rec['fare_product_id'] ?? '').trim()
+      if ((ttype !== '' && ttype !== '0') || tproduct !== '') {
+        warnings.push(t('warn.transferPaidDropped', { id: product.id }))
+      }
+
+      const count = (rec['transfer_count'] ?? '').trim()
+      let transferPolicy: 'none' | 'limited' | 'unlimited' = 'none'
+      let transferCount = ''
+      if (count === '-1') {
+        transferPolicy = 'unlimited'
+      } else if (/^\d+$/.test(count) && Number(count) > 0) {
+        transferPolicy = 'limited'
+        transferCount = count
+      }
+
+      let durationMinutes = ''
+      let durationLimitType = product.legRules.durationLimitType
+      const dl = (rec['duration_limit'] ?? '').trim()
+      if (/^\d+$/.test(dl) && Number(dl) > 0) {
+        const sec = Number(dl)
+        if (sec % 60 === 0) {
+          durationMinutes = String(sec / 60)
+        } else {
+          durationMinutes = String(Math.round(sec / 60))
+          warnings.push(t('warn.durationRounded', { id: product.id, minutes: durationMinutes }))
+        }
+        const dt = Number((rec['duration_limit_type'] ?? '').trim())
+        durationLimitType = [0, 1, 2, 3].includes(dt) ? (dt as 0 | 1 | 2 | 3) : 1
+      }
+
+      product.legRules = { transferPolicy, transferCount, durationMinutes, durationLimitType }
+    })
+  }
+}
+
 /** Load a GTFS fares zip in the browser and reconstruct the app model. */
 export async function importFromZip(file: File, t: TFunc): Promise<ImportResult> {
   const warnings: string[] = []
@@ -221,6 +320,8 @@ export async function importFromZip(file: File, t: TFunc): Promise<ImportResult>
   const mediaEntry = findEntry(zip, 'fare_media.txt')
   const riderEntry = findEntry(zip, 'rider_categories.txt')
   const productsEntry = findEntry(zip, 'fare_products.txt')
+  const legEntry = findEntry(zip, 'fare_leg_rules.txt')
+  const transferEntry = findEntry(zip, 'fare_transfer_rules.txt')
 
   if (!mediaEntry && !productsEntry) {
     throw new Error(t('import.errorNoFiles'))
@@ -255,6 +356,14 @@ export async function importFromZip(file: File, t: TFunc): Promise<ImportResult>
     )
   } else {
     warnings.push(t('warn.productMissing'))
+  }
+
+  if (legEntry || transferEntry) {
+    const legRecords = legEntry ? toRecords(parseCsv(await legEntry.async('string'))) : null
+    const transferRecords = transferEntry
+      ? toRecords(parseCsv(await transferEntry.async('string')))
+      : null
+    applyLegAndTransferRules(products, legRecords, transferRecords, warnings, t)
   }
 
   return { networkName: networkFromFilename(file.name), supports, riderCategories, products, warnings }

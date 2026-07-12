@@ -115,6 +115,25 @@ const dict: Record<Lang, Record<string, string>> = {
     'products.add': 'Add product',
     'products.save': 'Save changes',
 
+    'legrules.enable': 'Define leg & transfer rules (optional)',
+    'legrules.hint':
+      'Emits fare_leg_rules.txt + fare_transfer_rules.txt for this product. No network/area — transfers apply within this product only, and are free.',
+    'legrules.transfers': 'Transfers allowed',
+    'legrules.transfers.none': 'None',
+    'legrules.transfers.limited': 'Limited',
+    'legrules.transfers.unlimited': 'Unlimited',
+    'legrules.count': 'Number of transfers',
+    'legrules.durationMinutes': 'Validity limit (minutes)',
+    'legrules.noLimit': 'no limit',
+    'legrules.durationType': 'Window measured between',
+    'legrules.durationType.0': 'departure → arrival',
+    'legrules.durationType.1': 'departure → departure',
+    'legrules.durationType.2': 'arrival → departure',
+    'legrules.durationType.3': 'arrival → arrival',
+    'legrules.summaryNoTransfer': 'leg rule, no transfer',
+    'legrules.summaryUnlimited': 'unlimited transfers',
+    'legrules.summaryCount': '{n} transfers',
+
     'preview.title': 'Preview & download',
     'preview.help': 'Live preview of the generated GTFS files. Download one, or all as a zip.',
     'preview.downloadAll': 'Download all ({zip})',
@@ -129,6 +148,8 @@ const dict: Record<Lang, Record<string, string>> = {
     'error.amountDecimals': '{currency} allows at most {max} decimals.',
     'error.currencyRequired': 'A currency is required.',
     'error.currencyInvalid': '"{code}" is not a valid ISO 4217 currency code.',
+    'error.transferCount': 'Number of transfers must be a positive whole number.',
+    'error.durationNumber': 'Duration must be a positive whole number of minutes.',
     'error.supportDuplicate': 'A support with id "{id}" already exists.',
     'error.productDuplicate': 'A product with id "{id}" already exists.',
     'error.riderDuplicate': 'A category with id "{id}" already exists.',
@@ -153,6 +174,18 @@ const dict: Record<Lang, Record<string, string>> = {
     'warn.productRiderRef':
       'fare_products.txt: product "{id}" references rider_category_id "{ref}" not found in rider_categories.txt.',
     'warn.productMissing': 'fare_products.txt not found in the archive; no products imported.',
+    'warn.legRulesExtraColumns':
+      'fare_leg_rules.txt: network/area/timeframe columns are not supported and were ignored.',
+    'warn.legRuleUnknownProduct':
+      'fare_leg_rules.txt line {line}: unknown fare_product_id "{id}"; skipped.',
+    'warn.transferCrossGroup':
+      'fare_transfer_rules.txt: a transfer between different products (from "{from}" to "{to}") is not supported and was skipped.',
+    'warn.transferUnknownGroup':
+      'fare_transfer_rules.txt: leg group "{group}" has no matching fare_leg_rules row; skipped.',
+    'warn.transferPaidDropped':
+      'fare_transfer_rules.txt: only free transfers are modeled; the transfer fare/type on "{id}" was dropped.',
+    'warn.durationRounded':
+      'fare_transfer_rules.txt: duration for "{id}" was rounded to {minutes} minutes.',
   },
   fr: {
     'common.cancel': 'Annuler',
@@ -249,6 +282,25 @@ const dict: Record<Lang, Record<string, string>> = {
     'products.add': 'Ajouter un produit',
     'products.save': 'Enregistrer',
 
+    'legrules.enable': 'Définir des règles de leg & transfert (optionnel)',
+    'legrules.hint':
+      'Génère fare_leg_rules.txt + fare_transfer_rules.txt pour ce produit. Sans réseau/zone — les transferts ne s’appliquent qu’à ce produit, et sont gratuits.',
+    'legrules.transfers': 'Transferts autorisés',
+    'legrules.transfers.none': 'Aucun',
+    'legrules.transfers.limited': 'Limité',
+    'legrules.transfers.unlimited': 'Illimité',
+    'legrules.count': 'Nombre de transferts',
+    'legrules.durationMinutes': 'Limite de validité (minutes)',
+    'legrules.noLimit': 'sans limite',
+    'legrules.durationType': 'Fenêtre mesurée entre',
+    'legrules.durationType.0': 'départ → arrivée',
+    'legrules.durationType.1': 'départ → départ',
+    'legrules.durationType.2': 'arrivée → départ',
+    'legrules.durationType.3': 'arrivée → arrivée',
+    'legrules.summaryNoTransfer': 'règle de leg, sans transfert',
+    'legrules.summaryUnlimited': 'transferts illimités',
+    'legrules.summaryCount': '{n} transferts',
+
     'preview.title': 'Aperçu & téléchargement',
     'preview.help': 'Aperçu en direct des fichiers GTFS générés. Téléchargez-en un, ou tout en zip.',
     'preview.downloadAll': 'Tout télécharger ({zip})',
@@ -263,6 +315,8 @@ const dict: Record<Lang, Record<string, string>> = {
     'error.amountDecimals': '{currency} n’autorise au plus que {max} décimales.',
     'error.currencyRequired': 'Une devise est requise.',
     'error.currencyInvalid': '« {code} » n’est pas un code de devise ISO 4217 valide.',
+    'error.transferCount': 'Le nombre de transferts doit être un entier positif.',
+    'error.durationNumber': 'La durée doit être un nombre entier de minutes positif.',
     'error.supportDuplicate': 'Un support avec l’identifiant « {id} » existe déjà.',
     'error.productDuplicate': 'Un produit avec l’identifiant « {id} » existe déjà.',
     'error.riderDuplicate': 'Une catégorie avec l’identifiant « {id} » existe déjà.',
@@ -290,6 +344,18 @@ const dict: Record<Lang, Record<string, string>> = {
     'warn.productRiderRef':
       'fare_products.txt : le produit « {id} » référence rider_category_id « {ref} » absent de rider_categories.txt.',
     'warn.productMissing': 'fare_products.txt absent de l’archive ; aucun produit importé.',
+    'warn.legRulesExtraColumns':
+      'fare_leg_rules.txt : les colonnes réseau/zone/horaire ne sont pas prises en charge et ont été ignorées.',
+    'warn.legRuleUnknownProduct':
+      'fare_leg_rules.txt ligne {line} : fare_product_id « {id} » inconnu ; ignorée.',
+    'warn.transferCrossGroup':
+      'fare_transfer_rules.txt : un transfert entre produits différents (de « {from} » vers « {to} ») n’est pas pris en charge et a été ignoré.',
+    'warn.transferUnknownGroup':
+      'fare_transfer_rules.txt : le groupe de legs « {group} » n’a pas de ligne fare_leg_rules correspondante ; ignoré.',
+    'warn.transferPaidDropped':
+      'fare_transfer_rules.txt : seuls les transferts gratuits sont modélisés ; le tarif/type de transfert de « {id} » a été abandonné.',
+    'warn.durationRounded':
+      'fare_transfer_rules.txt : la durée de « {id} » a été arrondie à {minutes} minutes.',
   },
 }
 

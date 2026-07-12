@@ -76,6 +76,53 @@ export function generateFareProducts(
   return toCsv(header, rows)
 }
 
+/** The leg group id auto-derived for a product (one group per product). */
+export function legGroupId(productId: string): string {
+  return `${productId}_leg`
+}
+
+/**
+ * Build fare_leg_rules.txt — one row per product that has leg rules, linking
+ * the product's own leg group to the product. No network/area/timeframe
+ * columns are emitted (kept deliberately simple).
+ */
+export function generateFareLegRules(products: Product[]): string {
+  const header = ['leg_group_id', 'fare_product_id']
+  const rows = products
+    .filter((p) => p.legRules)
+    .map((p) => [legGroupId(p.id), p.id])
+  return toCsv(header, rows)
+}
+
+/**
+ * Build fare_transfer_rules.txt for products that allow transfers. Each rule
+ * loops a product's leg group onto itself (from == to), so transfer_count is
+ * required. Transfers are always free (fare_transfer_type 0, empty product).
+ */
+export function generateFareTransferRules(products: Product[]): string {
+  const header = [
+    'from_leg_group_id',
+    'to_leg_group_id',
+    'transfer_count',
+    'duration_limit',
+    'duration_limit_type',
+    'fare_transfer_type',
+    'fare_product_id',
+  ]
+  const rows: string[][] = []
+  for (const p of products) {
+    const lr = p.legRules
+    if (!lr || lr.transferPolicy === 'none') continue
+    const g = legGroupId(p.id)
+    const count = lr.transferPolicy === 'unlimited' ? '-1' : lr.transferCount.trim() || '0'
+    const hasDuration = lr.durationMinutes.trim() !== ''
+    const durationSec = hasDuration ? String(Number(lr.durationMinutes) * 60) : ''
+    const durationType = hasDuration ? String(lr.durationLimitType) : ''
+    rows.push([g, g, count, durationSec, durationType, '0', ''])
+  }
+  return toCsv(header, rows)
+}
+
 export interface GtfsFile {
   name: string
   content: string
@@ -99,6 +146,17 @@ export function generateFiles(state: AppState): GtfsFile[] {
     name: 'fare_products.txt',
     content: generateFareProducts(state.products, supportIds, categoryIds),
   })
+  // fare_leg_rules.txt / fare_transfer_rules.txt are optional: only emitted
+  // when at least one product defines them.
+  if (state.products.some((p) => p.legRules)) {
+    files.push({ name: 'fare_leg_rules.txt', content: generateFareLegRules(state.products) })
+  }
+  if (state.products.some((p) => p.legRules && p.legRules.transferPolicy !== 'none')) {
+    files.push({
+      name: 'fare_transfer_rules.txt',
+      content: generateFareTransferRules(state.products),
+    })
+  }
   return files
 }
 
