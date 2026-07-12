@@ -72,7 +72,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.chooseFiles': 'Add files…',
     'ai.extract': 'Extract',
     'ai.extracting': 'Extracting…',
-    'ai.close': 'Close',
+    'ai.reviewData': 'Review data',
     'ai.summary':
       'AI filled {supports} supports, {riders} rider categories and {products} products. Review them below.',
     'ai.warnings': '{count} notes to review',
@@ -278,7 +278,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.chooseFiles': 'Ajouter des fichiers…',
     'ai.extract': 'Extraire',
     'ai.extracting': 'Extraction…',
-    'ai.close': 'Fermer',
+    'ai.reviewData': 'Relire les données',
     'ai.summary':
       'L’IA a rempli {supports} supports, {riders} catégories de voyageurs et {products} produits. Relisez-les ci-dessous.',
     'ai.warnings': '{count} points à vérifier',
