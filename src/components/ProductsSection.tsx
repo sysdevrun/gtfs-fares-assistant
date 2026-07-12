@@ -34,9 +34,8 @@ interface Draft {
   supportIds: string[]
   riderCategoryId: string
   idTouched: boolean
-  // Optional leg & transfer rules.
-  legRulesEnabled: boolean
-  transferPolicy: 'none' | 'limited' | 'unlimited'
+  // Optional leg & transfer rules. 'undef' = no leg rules at all.
+  transferPolicy: 'undef' | 'none' | 'limited' | 'unlimited'
   transferCount: string
   durationMinutes: string
   durationLimitType: 0 | 1 | 2 | 3
@@ -52,8 +51,7 @@ const emptyDraft: Draft = {
   supportIds: [],
   riderCategoryId: '',
   idTouched: false,
-  legRulesEnabled: false,
-  transferPolicy: 'none',
+  transferPolicy: 'undef',
   transferCount: '',
   durationMinutes: '',
   durationLimitType: 1,
@@ -83,8 +81,7 @@ export default function ProductsSection({ products, supports, riderCategories, o
         ? p.riderCategoryId
         : '',
       idTouched: true,
-      legRulesEnabled: !!p.legRules,
-      transferPolicy: p.legRules?.transferPolicy ?? 'none',
+      transferPolicy: p.legRules?.transferPolicy ?? 'undef',
       transferCount: p.legRules?.transferCount ?? '',
       durationMinutes: p.legRules?.durationMinutes ?? '',
       durationLimitType: p.legRules?.durationLimitType ?? 1,
@@ -125,15 +122,16 @@ export default function ProductsSection({ products, supports, riderCategories, o
       return
     }
     let legRules: ProductLegRules | undefined
-    if (draft.legRulesEnabled) {
-      if (draft.transferPolicy === 'limited') {
+    if (draft.transferPolicy !== 'undef') {
+      const policy = draft.transferPolicy
+      if (policy === 'limited') {
         const countError = validateTransferCount(draft.transferCount)
         if (countError) {
           setError(t(countError.key, countError.params))
           return
         }
       }
-      if (draft.transferPolicy !== 'none') {
+      if (policy !== 'none') {
         const durationError = validateDurationMinutes(draft.durationMinutes)
         if (durationError) {
           setError(t(durationError.key, durationError.params))
@@ -141,9 +139,9 @@ export default function ProductsSection({ products, supports, riderCategories, o
         }
       }
       legRules = {
-        transferPolicy: draft.transferPolicy,
-        transferCount: draft.transferPolicy === 'limited' ? draft.transferCount.trim() : '',
-        durationMinutes: draft.transferPolicy !== 'none' ? draft.durationMinutes.trim() : '',
+        transferPolicy: policy,
+        transferCount: policy === 'limited' ? draft.transferCount.trim() : '',
+        durationMinutes: policy !== 'none' ? draft.durationMinutes.trim() : '',
         durationLimitType: draft.durationLimitType,
       }
     }
@@ -364,40 +362,32 @@ export default function ProductsSection({ products, supports, riderCategories, o
 
       {/* Optional leg & transfer rules */}
       <div className="mt-4 rounded-lg border border-slate-200 p-3">
-        <label className="flex items-start gap-2">
-          <input
-            type="checkbox"
-            checked={draft.legRulesEnabled}
-            onChange={(e) => setDraft((d) => ({ ...d, legRulesEnabled: e.target.checked }))}
-            className="mt-0.5 h-4 w-4"
-          />
-          <span className="text-sm font-medium text-slate-700">
-            {t('legrules.enable')}
-            <span className="block text-xs font-normal text-slate-400">{t('legrules.hint')}</span>
-          </span>
-        </label>
+        <div className="text-sm font-medium text-slate-700">
+          {t('legrules.title')}
+          <span className="block text-xs font-normal text-slate-400">{t('legrules.hint')}</span>
+        </div>
 
-        {draft.legRulesEnabled && (
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <label className="block">
-              <span className="text-sm font-medium text-slate-700">{t('legrules.transfers')}</span>
-              <select
-                value={draft.transferPolicy}
-                onChange={(e) =>
-                  setDraft((d) => ({
-                    ...d,
-                    transferPolicy: e.target.value as Draft['transferPolicy'],
-                  }))
-                }
-                className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              >
-                <option value="none">{t('legrules.transfers.none')}</option>
-                <option value="limited">{t('legrules.transfers.limited')}</option>
-                <option value="unlimited">{t('legrules.transfers.unlimited')}</option>
-              </select>
-            </label>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <label className="block">
+            <span className="text-sm font-medium text-slate-700">{t('legrules.transfers')}</span>
+            <select
+              value={draft.transferPolicy}
+              onChange={(e) =>
+                setDraft((d) => ({
+                  ...d,
+                  transferPolicy: e.target.value as Draft['transferPolicy'],
+                }))
+              }
+              className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="undef">{t('legrules.transfers.undef')}</option>
+              <option value="none">{t('legrules.transfers.none')}</option>
+              <option value="limited">{t('legrules.transfers.limited')}</option>
+              <option value="unlimited">{t('legrules.transfers.unlimited')}</option>
+            </select>
+          </label>
 
-            {draft.transferPolicy === 'limited' && (
+          {draft.transferPolicy === 'limited' && (
               <label className="block">
                 <span className="text-sm font-medium text-slate-700">{t('legrules.count')}</span>
                 <input
@@ -410,7 +400,7 @@ export default function ProductsSection({ products, supports, riderCategories, o
               </label>
             )}
 
-            {draft.transferPolicy !== 'none' && (
+            {(draft.transferPolicy === 'limited' || draft.transferPolicy === 'unlimited') && (
               <>
                 <label className="block">
                   <span className="text-sm font-medium text-slate-700">
@@ -457,7 +447,6 @@ export default function ProductsSection({ products, supports, riderCategories, o
               </>
             )}
           </div>
-        )}
       </div>
 
       {error && <p className="mt-2 text-sm text-red-600">{error}</p>}

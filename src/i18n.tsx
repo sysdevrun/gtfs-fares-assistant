@@ -58,7 +58,7 @@ const dict: Record<Lang, Record<string, string>> = {
 
     'supports.title': 'Supports (fare media)',
     'supports.help':
-      'The media on which a fare product can be carried — paper ticket, transit card, mobile app… Each becomes a row in fare_media.txt.',
+      'The media on which a fare product can be carried — paper ticket, transit card, mobile app…',
     'supports.type': 'fare_media_type',
     'supports.selectType': '— Select a media type first —',
     'supports.typeFirstHint': 'Pick a fare media type to fill in the rest.',
@@ -85,7 +85,7 @@ const dict: Record<Lang, Record<string, string>> = {
 
     'riders.title': 'Rider categories & conditions',
     'riders.help':
-      'Optional rider groups (Adult, Youth, Senior…) that a product can target — each becomes a row in rider_categories.txt. Link conditions with an eligibility URL.',
+      'Optional rider groups (Adult, Youth, Senior…) that a product can target. Link conditions with an eligibility URL.',
     'riders.name': 'Name',
     'riders.id': 'rider_category_id',
     'riders.isDefault': 'Default category (is_default_fare_category)',
@@ -98,7 +98,7 @@ const dict: Record<Lang, Record<string, string>> = {
 
     'products.title': 'Products',
     'products.help':
-      'Fare products with a price, the supports they can be used on, and an optional rider category. Each product/support pair becomes a row in fare_products.txt.',
+      'Fare products with a price, the supports they can be used on, and an optional rider category.',
     'products.name': 'Name',
     'products.id': 'fare_product_id',
     'products.amount': 'Amount',
@@ -115,10 +115,11 @@ const dict: Record<Lang, Record<string, string>> = {
     'products.add': 'Add product',
     'products.save': 'Save changes',
 
-    'legrules.enable': 'Define leg & transfer rules (optional)',
+    'legrules.title': 'Leg & transfer rules (optional)',
     'legrules.hint':
-      'Emits fare_leg_rules.txt + fare_transfer_rules.txt for this product. No network/area — transfers apply within this product only, and are free.',
+      'No network/area — transfers apply within this product only, and are free.',
     'legrules.transfers': 'Transfers allowed',
+    'legrules.transfers.undef': 'Not defined',
     'legrules.transfers.none': 'None',
     'legrules.transfers.limited': 'Limited',
     'legrules.transfers.unlimited': 'Unlimited',
@@ -225,7 +226,7 @@ const dict: Record<Lang, Record<string, string>> = {
 
     'supports.title': 'Supports (médias tarifaires)',
     'supports.help':
-      'Le média sur lequel un produit tarifaire peut être porté — ticket papier, carte de transport, application mobile… Chacun devient une ligne de fare_media.txt.',
+      'Le média sur lequel un produit tarifaire peut être porté — ticket papier, carte de transport, application mobile…',
     'supports.type': 'fare_media_type',
     'supports.selectType': '— Choisissez d’abord un type de média —',
     'supports.typeFirstHint': 'Choisissez un type de média tarifaire pour renseigner le reste.',
@@ -252,7 +253,7 @@ const dict: Record<Lang, Record<string, string>> = {
 
     'riders.title': 'Catégories de voyageurs & conditions',
     'riders.help':
-      'Groupes de voyageurs facultatifs (Adulte, Jeune, Senior…) qu’un produit peut cibler — chacun devient une ligne de rider_categories.txt. Reliez les conditions via une URL.',
+      'Groupes de voyageurs facultatifs (Adulte, Jeune, Senior…) qu’un produit peut cibler. Reliez les conditions via une URL.',
     'riders.name': 'Nom',
     'riders.id': 'rider_category_id',
     'riders.isDefault': 'Catégorie par défaut (is_default_fare_category)',
@@ -265,7 +266,7 @@ const dict: Record<Lang, Record<string, string>> = {
 
     'products.title': 'Produits',
     'products.help':
-      'Produits tarifaires avec un prix, les supports sur lesquels ils sont utilisables et une catégorie de voyageur facultative. Chaque paire produit/support devient une ligne de fare_products.txt.',
+      'Produits tarifaires avec un prix, les supports sur lesquels ils sont utilisables et une catégorie de voyageur facultative.',
     'products.name': 'Nom',
     'products.id': 'fare_product_id',
     'products.amount': 'Montant',
@@ -282,14 +283,15 @@ const dict: Record<Lang, Record<string, string>> = {
     'products.add': 'Ajouter un produit',
     'products.save': 'Enregistrer',
 
-    'legrules.enable': 'Définir des règles de leg & transfert (optionnel)',
+    'legrules.title': 'Règles de leg & correspondance (optionnel)',
     'legrules.hint':
-      'Génère fare_leg_rules.txt + fare_transfer_rules.txt pour ce produit. Sans réseau/zone — les transferts ne s’appliquent qu’à ce produit, et sont gratuits.',
-    'legrules.transfers': 'Transferts autorisés',
-    'legrules.transfers.none': 'Aucun',
+      'Sans réseau/zone — les correspondances ne s’appliquent qu’à ce produit, et sont gratuites.',
+    'legrules.transfers': 'Correspondances autorisées',
+    'legrules.transfers.undef': 'Non défini',
+    'legrules.transfers.none': 'Aucune',
     'legrules.transfers.limited': 'Limité',
     'legrules.transfers.unlimited': 'Illimité',
-    'legrules.count': 'Nombre de transferts',
+    'legrules.count': 'Nombre de correspondances',
     'legrules.durationMinutes': 'Limite de validité (minutes)',
     'legrules.noLimit': 'sans limite',
     'legrules.durationType': 'Fenêtre mesurée entre',
@@ -297,9 +299,9 @@ const dict: Record<Lang, Record<string, string>> = {
     'legrules.durationType.1': 'départ → départ',
     'legrules.durationType.2': 'arrivée → départ',
     'legrules.durationType.3': 'arrivée → arrivée',
-    'legrules.summaryNoTransfer': 'règle de leg, sans transfert',
-    'legrules.summaryUnlimited': 'transferts illimités',
-    'legrules.summaryCount': '{n} transferts',
+    'legrules.summaryNoTransfer': 'règle de leg, sans correspondance',
+    'legrules.summaryUnlimited': 'correspondances illimitées',
+    'legrules.summaryCount': '{n} correspondances',
 
     'preview.title': 'Aperçu & téléchargement',
     'preview.help': 'Aperçu en direct des fichiers GTFS générés. Téléchargez-en un, ou tout en zip.',
@@ -315,7 +317,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'error.amountDecimals': '{currency} n’autorise au plus que {max} décimales.',
     'error.currencyRequired': 'Une devise est requise.',
     'error.currencyInvalid': '« {code} » n’est pas un code de devise ISO 4217 valide.',
-    'error.transferCount': 'Le nombre de transferts doit être un entier positif.',
+    'error.transferCount': 'Le nombre de correspondances doit être un entier positif.',
     'error.durationNumber': 'La durée doit être un nombre entier de minutes positif.',
     'error.supportDuplicate': 'Un support avec l’identifiant « {id} » existe déjà.',
     'error.productDuplicate': 'Un produit avec l’identifiant « {id} » existe déjà.',
@@ -349,11 +351,11 @@ const dict: Record<Lang, Record<string, string>> = {
     'warn.legRuleUnknownProduct':
       'fare_leg_rules.txt ligne {line} : fare_product_id « {id} » inconnu ; ignorée.',
     'warn.transferCrossGroup':
-      'fare_transfer_rules.txt : un transfert entre produits différents (de « {from} » vers « {to} ») n’est pas pris en charge et a été ignoré.',
+      'fare_transfer_rules.txt : une correspondance entre produits différents (de « {from} » vers « {to} ») n’est pas prise en charge et a été ignorée.',
     'warn.transferUnknownGroup':
       'fare_transfer_rules.txt : le groupe de legs « {group} » n’a pas de ligne fare_leg_rules correspondante ; ignoré.',
     'warn.transferPaidDropped':
-      'fare_transfer_rules.txt : seuls les transferts gratuits sont modélisés ; le tarif/type de transfert de « {id} » a été abandonné.',
+      'fare_transfer_rules.txt : seules les correspondances gratuites sont modélisées ; le tarif/type de correspondance de « {id} » a été abandonné.',
     'warn.durationRounded':
       'fare_transfer_rules.txt : la durée de « {id} » a été arrondie à {minutes} minutes.',
   },
