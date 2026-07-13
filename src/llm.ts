@@ -321,6 +321,7 @@ export async function extractFromFiles(
   apiKey: string,
   model: AiModel,
   t: TFunc,
+  customPrompt = '',
 ): Promise<ImportResult> {
   const client = new Anthropic({ apiKey, dangerouslyAllowBrowser: true })
 
@@ -333,10 +334,17 @@ export async function extractFromFiles(
     text: 'Extract the fare structure from the document(s) above into the required JSON schema.',
   })
 
+  // Optional user-provided guidance, appended to (not replacing) the base
+  // instructions so the schema and extraction rules still apply.
+  const extra = customPrompt.trim()
+  const system = extra
+    ? `${SYSTEM_PROMPT}\n\nAdditional instructions from the user (follow them unless they conflict with the schema above):\n${extra}`
+    : SYSTEM_PROMPT
+
   const stream = client.messages.stream({
     model,
     max_tokens: 16000,
-    system: SYSTEM_PROMPT,
+    system,
     messages: [{ role: 'user', content }],
     output_config: { format: { type: 'json_schema', schema: OUTPUT_SCHEMA as Record<string, unknown> } },
   })
