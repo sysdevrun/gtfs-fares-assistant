@@ -30,7 +30,7 @@ const dict: Record<Lang, Record<string, string>> = {
 
     'app.title': 'GTFS Fares Assistant',
     'app.subtitle':
-      'Build fare_media.txt & fare_products.txt (GTFS Fares V2) — entirely in your browser.',
+      'Generate your GTFS Fares v2 files with ease.',
     'app.reset': 'Reset all',
     'app.footer': 'Frontend-only · your data stays in this browser (localStorage) · ',
     'app.footerLink': 'GTFS Fares V2 reference',
@@ -49,6 +49,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'import.help':
       'Load a GTFS zip containing fare_media.txt, fare_products.txt and/or rider_categories.txt to edit them. Unzipped in your browser — replaces the current data.',
     'import.choose': 'Choose zip…',
+    'import.dropHint': 'You can also drag and drop the zip onto this block.',
     'import.reading': 'Reading…',
     'import.summary':
       'Imported {supports} supports, {riders} rider categories and {products} products from {file}.',
@@ -60,8 +61,6 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.help':
       'Upload PDFs, images or Excel files describing your fares and let Claude fill the supports, categories and products — then review everything below.',
     'ai.button': 'Ask AI to fill in data from my fare schedule',
-    'ai.privacy':
-      'This is the only feature that sends data off your machine: the files you attach are sent directly from your browser to the Anthropic (Claude) API using your own key. Nothing passes through any server of ours.',
     'ai.apiKey': 'Anthropic API key',
     'ai.apiKeyHint': 'Stored only in this browser (localStorage). Create one at',
     'ai.model': 'Model',
@@ -70,6 +69,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.files': 'Fare documents',
     'ai.filesHint': 'PDF, images (PNG/JPG…) and Excel/CSV. You can add several files.',
     'ai.chooseFiles': 'Add files…',
+    'ai.dropHint': 'or drag and drop files here',
     'ai.extract': 'Extract',
     'ai.extracting': 'Extracting…',
     'ai.reviewData': 'Review data',
@@ -234,7 +234,7 @@ const dict: Record<Lang, Record<string, string>> = {
 
     'app.title': 'Assistant tarifs GTFS',
     'app.subtitle':
-      'Générez fare_media.txt et fare_products.txt (GTFS Fares V2) — entièrement dans votre navigateur.',
+      'Mettez vous en conformité et générez vos fichiers GTFS Fares v2 en toute simplicité.',
     'app.reset': 'Tout réinitialiser',
     'app.footer': 'Sans serveur · vos données restent dans ce navigateur (localStorage) · ',
     'app.footerLink': 'Référence GTFS Fares V2',
@@ -253,6 +253,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'import.help':
       'Chargez un zip GTFS contenant fare_media.txt, fare_products.txt et/ou rider_categories.txt pour les modifier. Décompressé dans votre navigateur — remplace les données actuelles.',
     'import.choose': 'Choisir un zip…',
+    'import.dropHint': 'Vous pouvez aussi glisser-déposer le zip sur ce bloc.',
     'import.reading': 'Lecture…',
     'import.summary':
       '{supports} supports, {riders} catégories de voyageurs et {products} produits importés depuis {file}.',
@@ -264,8 +265,6 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.help':
       'Envoyez des PDF, images ou fichiers Excel décrivant vos tarifs et laissez Claude remplir les supports, catégories et produits — puis relisez le tout ci-dessous.',
     'ai.button': 'Demander à l’IA de remplir les données depuis ma gamme tarifaire',
-    'ai.privacy':
-      'C’est la seule fonctionnalité qui envoie des données hors de votre machine : les fichiers joints sont transmis directement depuis votre navigateur à l’API Anthropic (Claude) avec votre propre clé. Rien ne transite par un de nos serveurs.',
     'ai.apiKey': 'Clé API Anthropic',
     'ai.apiKeyHint': 'Stockée uniquement dans ce navigateur (localStorage). Créez-en une sur',
     'ai.model': 'Modèle',
@@ -274,6 +273,7 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.files': 'Documents tarifaires',
     'ai.filesHint': 'PDF, images (PNG/JPG…) et Excel/CSV. Vous pouvez ajouter plusieurs fichiers.',
     'ai.chooseFiles': 'Ajouter des fichiers…',
+    'ai.dropHint': 'ou glissez-déposez vos fichiers ici',
     'ai.extract': 'Extraire',
     'ai.extracting': 'Extraction…',
     'ai.reviewData': 'Relire les données',

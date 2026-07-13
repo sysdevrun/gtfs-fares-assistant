@@ -36,6 +36,7 @@ export default function AiFillSection({ onImport }: Props) {
   const [model, setModel] = useState<AiModel>(loadModel)
   const [files, setFiles] = useState<File[]>([])
   const [busy, setBusy] = useState(false)
+  const [dragOver, setDragOver] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [summary, setSummary] = useState<string | null>(null)
   const [warnings, setWarnings] = useState<string[]>([])
@@ -150,10 +151,6 @@ export default function AiFillSection({ onImport }: Props) {
               </button>
             </div>
 
-            <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-              {t('ai.privacy')}
-            </p>
-
             <label className="mb-4 block">
               <span className="text-sm font-semibold text-slate-800">{t('ai.apiKey')}</span>
               <input
@@ -193,13 +190,32 @@ export default function AiFillSection({ onImport }: Props) {
             <div className="mb-4">
               <span className="text-sm font-semibold text-slate-800">{t('ai.files')}</span>
               <p className="mb-2 mt-0.5 text-xs text-slate-500">{t('ai.filesHint')}</p>
-              <button
-                onClick={() => inputRef.current?.click()}
-                disabled={busy}
-                className="rounded-md border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  if (!busy) setDragOver(true)
+                }}
+                onDragLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget as Node)) setDragOver(false)
+                }}
+                onDrop={(e) => {
+                  e.preventDefault()
+                  setDragOver(false)
+                  if (!busy) addFiles(e.dataTransfer.files)
+                }}
+                className={`rounded-lg border-2 border-dashed p-4 text-center transition-colors ${
+                  dragOver ? 'border-blue-400 bg-blue-50' : 'border-slate-300'
+                }`}
               >
-                {t('ai.chooseFiles')}
-              </button>
+                <button
+                  onClick={() => inputRef.current?.click()}
+                  disabled={busy}
+                  className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                >
+                  {t('ai.chooseFiles')}
+                </button>
+                <p className="mt-1.5 text-xs text-slate-500">{t('ai.dropHint')}</p>
+              </div>
               <input
                 ref={inputRef}
                 type="file"
