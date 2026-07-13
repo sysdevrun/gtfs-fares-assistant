@@ -66,6 +66,10 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.model': 'Model',
     'ai.model.sonnet': 'Claude Sonnet 5 — faster & cheaper (recommended)',
     'ai.model.opus': 'Claude Opus 4.8 — highest accuracy for hard documents',
+    'ai.customPrompt': 'Add custom instructions',
+    'ai.customPromptHint':
+      'Optional guidance added to the default prompt to steer the extraction (e.g. focus on monthly passes, ignore school lines).',
+    'ai.customPromptPlaceholder': 'e.g. Prices are in CHF; treat "abonnement" rows as monthly passes.',
     'ai.files': 'Fare documents',
     'ai.filesHint': 'PDF, images (PNG/JPG…) and Excel/CSV. You can add several files.',
     'ai.chooseFiles': 'Add files…',
@@ -270,6 +274,11 @@ const dict: Record<Lang, Record<string, string>> = {
     'ai.model': 'Modèle',
     'ai.model.sonnet': 'Claude Sonnet 5 — plus rapide et économique (recommandé)',
     'ai.model.opus': 'Claude Opus 4.8 — précision maximale pour les documents difficiles',
+    'ai.customPrompt': 'Ajouter des instructions personnalisées',
+    'ai.customPromptHint':
+      'Consignes facultatives ajoutées au prompt par défaut pour orienter l’extraction (ex. se concentrer sur les abonnements mensuels, ignorer les lignes scolaires).',
+    'ai.customPromptPlaceholder':
+      'ex. Les prix sont en CHF ; traiter les lignes « abonnement » comme des forfaits mensuels.',
     'ai.files': 'Documents tarifaires',
     'ai.filesHint': 'PDF, images (PNG/JPG…) et Excel/CSV. Vous pouvez ajouter plusieurs fichiers.',
     'ai.chooseFiles': 'Ajouter des fichiers…',

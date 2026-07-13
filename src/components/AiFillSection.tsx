@@ -9,12 +9,30 @@ interface Props {
 
 const KEY_LS = 'gtfs-fares-assistant:anthropic-key'
 const MODEL_LS = 'gtfs-fares-assistant:anthropic-model'
+const PROMPT_LS = 'gtfs-fares-assistant:custom-prompt'
+const PROMPT_ON_LS = 'gtfs-fares-assistant:custom-prompt-enabled'
 
 function loadKey(): string {
   try {
     return localStorage.getItem(KEY_LS) ?? ''
   } catch {
     return ''
+  }
+}
+
+function loadCustomPrompt(): string {
+  try {
+    return localStorage.getItem(PROMPT_LS) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+function loadCustomPromptEnabled(): boolean {
+  try {
+    return localStorage.getItem(PROMPT_ON_LS) === '1'
+  } catch {
+    return false
   }
 }
 
@@ -34,6 +52,8 @@ export default function AiFillSection({ onImport }: Props) {
   const [open, setOpen] = useState(false)
   const [apiKey, setApiKey] = useState(loadKey)
   const [model, setModel] = useState<AiModel>(loadModel)
+  const [customPromptEnabled, setCustomPromptEnabled] = useState(loadCustomPromptEnabled)
+  const [customPrompt, setCustomPrompt] = useState(loadCustomPrompt)
   const [files, setFiles] = useState<File[]>([])
   const [busy, setBusy] = useState(false)
   const [dragOver, setDragOver] = useState(false)
@@ -56,6 +76,20 @@ export default function AiFillSection({ onImport }: Props) {
       // ignore
     }
   }, [model])
+  useEffect(() => {
+    try {
+      localStorage.setItem(PROMPT_LS, customPrompt)
+    } catch {
+      // ignore
+    }
+  }, [customPrompt])
+  useEffect(() => {
+    try {
+      localStorage.setItem(PROMPT_ON_LS, customPromptEnabled ? '1' : '0')
+    } catch {
+      // ignore
+    }
+  }, [customPromptEnabled])
 
   // Close on Escape.
   useEffect(() => {
@@ -89,7 +123,13 @@ export default function AiFillSection({ onImport }: Props) {
       // it never weighs down users who don't use this feature.
       const llm = await import('../llm')
       try {
-        const result = await llm.extractFromFiles(files, apiKey.trim(), model, t)
+        const result = await llm.extractFromFiles(
+          files,
+          apiKey.trim(),
+          model,
+          t,
+          customPromptEnabled ? customPrompt : '',
+        )
         const applied = onImport(result)
         if (!applied) return
         setWarnings(result.warnings)
@@ -186,6 +226,32 @@ export default function AiFillSection({ onImport }: Props) {
                 <option value="claude-opus-4-8">{t('ai.model.opus')}</option>
               </select>
             </label>
+
+            <div className="mb-4">
+              <label className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={customPromptEnabled}
+                  onChange={(e) => setCustomPromptEnabled(e.target.checked)}
+                  disabled={busy}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span>
+                  <span className="text-sm font-semibold text-slate-800">{t('ai.customPrompt')}</span>
+                  <span className="mt-0.5 block text-xs text-slate-500">{t('ai.customPromptHint')}</span>
+                </span>
+              </label>
+              {customPromptEnabled && (
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  disabled={busy}
+                  rows={4}
+                  placeholder={t('ai.customPromptPlaceholder')}
+                  className="mt-2 w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-60"
+                />
+              )}
+            </div>
 
             <div className="mb-4">
               <span className="text-sm font-semibold text-slate-800">{t('ai.files')}</span>
